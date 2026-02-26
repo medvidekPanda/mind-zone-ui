@@ -1,0 +1,54 @@
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 m-0">Terapeuti</h1>
+    <p class="text-sm text-slate-500 m-0 mt-1">Správa uživatelů a jejich rolí</p>
+  </div>
+  <a routerLink="/users/new" pButton label="Přidat terapeuta" icon="pi pi-user-plus"></a>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+  <p-table
+    [value]="users()"
+    class="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4">Terapeut</th>
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4 text-center">Role</th>
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4 text-right">Akce</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold shrink-0">
+              {{ user.firstName[0] }}{{ user.lastName[0] }}
+            </div>
+            <div>
+              <p class="font-semibold text-slate-900 m-0 text-sm">{{ user.firstName }} {{ user.lastName }}</p>
+              <p class="text-xs text-slate-400 m-0 mt-0.5">Registrovaný uživatel</p>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 text-center">
+          <p-tag [value]="user.role" severity="info" [rounded]="true" />
+        </td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex justify-end gap-1">
+            <a [routerLink]="['/users', user.id]" pButton icon="pi pi-user" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Detail terapeuta"></a>
+            <a [routerLink]="['/users', user.id, 'clients']" pButton icon="pi pi-users" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Klienti"></a>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3" class="py-16 text-center text-slate-400 italic">
+          <i class="pi pi-users text-4xl block mb-3 opacity-20"></i>
+          Žádní terapeuti nebyli nalezeni.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,0 +1,31 @@
+<app-page-header title="Klienti terapeuta">
+  <a [routerLink]="['/users', id()]" pButton label="Zpět" icon="pi pi-arrow-left" actions></a>
+</app-page-header>
+
+<p-table
+  [value]="clients()"
+  [tableStyle]="{ 'min-width': '50rem' }"
+  class="p-datatable-striped"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Jméno</th>
+      <th>Příjmení</th>
+      <th style="width: 8rem">Akce</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-client>
+    <tr>
+      <td>{{ client.firstName }}</td>
+      <td>{{ client.lastName }}</td>
+      <td>
+        <a [routerLink]="['/clients', client.id]" pButton label="Detail" size="small" text></a>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="3">Žádní klienti.</td>
+    </tr>
+  </ng-template>
+</p-table>

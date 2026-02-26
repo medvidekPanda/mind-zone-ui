@@ -1,0 +1,24 @@
+<app-page-header title="Registrace terapeuta">
+  <a routerLink="/users" pButton label="Zpět" icon="pi pi-arrow-left" actions></a>
+</app-page-header>
+
+<p-card>
+  <form class="flex flex-col gap-4 max-w-md">
+    <div class="flex flex-col gap-2">
+      <label for="firebaseId">Firebase ID</label>
+      <input pInputText id="firebaseId" [(ngModel)]="firebaseId" name="firebaseId" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="firstName">Jméno</label>
+      <input pInputText id="firstName" [(ngModel)]="firstName" name="firstName" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="lastName">Příjmení</label>
+      <input pInputText id="lastName" [(ngModel)]="lastName" name="lastName" class="w-full" />
+    </div>
+    <div class="flex gap-2">
+      <button type="button" pButton label="Uložit" icon="pi pi-check" (click)="save()"></button>
+      <a routerLink="/users" pButton label="Zrušit" severity="secondary" text></a>
+    </div>
+  </form>
+</p-card>

@@ -1,3 +1,70 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+  },
+  {
+    path: 'users',
+    loadComponent: () =>
+      import('./users/users-list.component').then((m) => m.UsersListComponent),
+  },
+  {
+    path: 'users/new',
+    loadComponent: () =>
+      import('./users/components/user-register/user-register.component').then((m) => m.UserRegisterComponent),
+  },
+  {
+    path: 'users/:id',
+    loadComponent: () =>
+      import('./users/components/user-detail/user-detail.component').then((m) => m.UserDetailComponent),
+  },
+  {
+    path: 'users/:id/clients',
+    loadComponent: () =>
+      import('./users/components/user-clients/user-clients.component').then((m) => m.UserClientsComponent),
+  },
+  {
+    path: 'clients',
+    loadComponent: () =>
+      import('./clients/clients-list.component').then((m) => m.ClientsListComponent),
+  },
+  {
+    path: 'clients/new',
+    loadComponent: () =>
+      import('./clients/components/client-form/client-form.component').then((m) => m.ClientFormComponent),
+  },
+  {
+    path: 'clients/:id',
+    loadComponent: () =>
+      import('./clients/components/client-detail/client-detail.component').then((m) => m.ClientDetailComponent),
+  },
+  {
+    path: 'clients/:id/edit',
+    loadComponent: () =>
+      import('./clients/components/client-form/client-form.component').then((m) => m.ClientFormComponent),
+  },
+  {
+    path: 'sessions',
+    loadComponent: () =>
+      import('./sessions/sessions-list.component').then((m) => m.SessionsListComponent),
+  },
+  {
+    path: 'sessions/new',
+    loadComponent: () =>
+      import('./sessions/components/session-schedule/session-schedule.component').then((m) => m.SessionScheduleComponent),
+  },
+  {
+    path: 'sessions/calendar',
+    loadComponent: () =>
+      import('./sessions/components/sessions-calendar/sessions-calendar.component').then((m) => m.SessionsCalendarComponent),
+  },
+  {
+    path: 'sessions/:id',
+    loadComponent: () =>
+      import('./sessions/components/session-detail/session-detail.component').then((m) => m.SessionDetailComponent),
+  },
+];

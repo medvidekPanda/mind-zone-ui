@@ -1,0 +1,105 @@
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 m-0">Sezení</h1>
+    <p class="text-sm text-slate-500 m-0 mt-1">Přehled všech terapeutických sezení</p>
+  </div>
+  <div class="flex gap-3">
+    <a
+      routerLink="/sessions/calendar"
+      pButton
+      label="Kalendář"
+      icon="pi pi-calendar"
+      severity="secondary"
+      outlined
+    ></a>
+    <a routerLink="/sessions/new" pButton label="Naplánovat sezení" icon="pi pi-plus"></a>
+  </div>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+  <p-table [value]="sessions()" class="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+        >
+          Datum a čas
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+        >
+          Terapeut
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+        >
+          Klient
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+        >
+          Délka
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+        >
+          Forma
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4 text-center"
+        >
+          Platba
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4 text-right"
+        >
+          Akce
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-session>
+      <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+        <td class="px-6 py-4">
+          <p class="font-semibold text-slate-900 m-0 text-sm">{{ session.date }}</p>
+          <p class="text-xs text-slate-400 m-0 mt-0.5">{{ session.time }}</p>
+        </td>
+        <td class="px-6 py-4 text-sm text-slate-700">{{ session.therapistName }}</td>
+        <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ session.clientName }}</td>
+        <td class="px-6 py-4 text-sm text-slate-600">{{ session.duration }} min</td>
+        <td class="px-6 py-4">
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
+            >{{ session.form }}</span
+          >
+        </td>
+        <td class="px-6 py-4 text-center">
+          <p-tag
+            [value]="session.paid ? 'Zaplaceno' : 'Čeká na úhradu'"
+            [severity]="session.paid ? 'success' : 'warn'"
+            [rounded]="true"
+          />
+        </td>
+        <td class="px-6 py-4 text-right">
+          <a
+            [routerLink]="['/sessions', session.id]"
+            pButton
+            icon="pi pi-arrow-up-right"
+            [rounded]="true"
+            [text]="true"
+            severity="secondary"
+            size="small"
+            pTooltip="Detail sezení"
+          ></a>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="py-16 text-center text-slate-400 italic">
+          <i class="pi pi-calendar-times text-4xl block mb-3 opacity-20"></i>
+          Žádná sezení nebyla nalezena.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

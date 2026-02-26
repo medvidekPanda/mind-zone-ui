@@ -1,0 +1,57 @@
+<app-page-header [title]="isEdit() ? 'Úprava klienta' : 'Nový klient'">
+  <a [routerLink]="isEdit() ? ['/clients', id()] : ['/clients']" pButton label="Zpět" icon="pi pi-arrow-left" actions></a>
+</app-page-header>
+
+<p-card>
+  <form class="flex flex-col gap-4 max-w-lg">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="firstName">Jméno</label>
+        <input pInputText id="firstName" [(ngModel)]="firstName" name="firstName" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="lastName">Příjmení</label>
+        <input pInputText id="lastName" [(ngModel)]="lastName" name="lastName" class="w-full" />
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="gender">Pohlaví</label>
+      <p-select
+        id="gender"
+        [options]="genderOptions"
+        [(ngModel)]="gender"
+        name="gender"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Vyberte"
+        [showClear]="true"
+        class="w-full"
+      ></p-select>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="birthDate">Datum narození</label>
+      <input pInputText id="birthDate" [(ngModel)]="birthDate" name="birthDate" placeholder="RRRR-MM-DD" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="email">E-mail</label>
+      <input pInputText id="email" type="email" [(ngModel)]="email" name="email" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="status">Status</label>
+      <p-select
+        id="status"
+        [options]="statusOptions"
+        [(ngModel)]="status"
+        name="status"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Vyberte"
+        class="w-full"
+      ></p-select>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" pButton label="Uložit" icon="pi pi-check" (click)="save()"></button>
+      <a [routerLink]="isEdit() ? ['/clients', id()] : ['/clients']" pButton label="Zrušit" severity="secondary" text></a>
+    </div>
+  </form>
+</p-card>

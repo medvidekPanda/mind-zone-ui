@@ -1,3 +1,4 @@
-/* Global styles – Tailwind, PrimeUI plugin, base */
+/* Global styles – Tailwind, PrimeUI plugin, PrimeIcons, base */
 @import 'tailwindcss';
 @import 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
