@@ -1,0 +1,12 @@
+<p-datepicker
+  [id]="id()"
+  [ngModel]="valueAsDate()"
+  (ngModelChange)="setDate($event)"
+  [placeholder]="placeholder()"
+  [showClear]="showClear()"
+  [invalid]="invalid()"
+  [disabled]="disabled()"
+  (onBlur)="touched.set(true)"
+  dateFormat="yy-mm-dd"
+  class="w-full"
+/>

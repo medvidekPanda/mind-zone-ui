@@ -1,0 +1,38 @@
+<div class="space-y-6">
+  <p-card
+    header="Statistiky"
+    class="rounded-2xl border border-surface-200 shadow-sm overflow-hidden"
+  >
+    <div class="space-y-4">
+      <div class="flex justify-between items-center py-2 border-b border-surface-100">
+        <span class="text-surface-600">Celkem sezení</span>
+        <span class="font-bold text-surface-900 text-lg">0</span>
+      </div>
+      <div class="flex justify-between items-center py-2 border-b border-surface-100">
+        <span class="text-surface-600">Naplánováno</span>
+        <span class="font-bold text-surface-900 text-lg">0</span>
+      </div>
+      <div class="flex justify-between items-center py-2 border-b border-surface-100">
+        <span class="text-surface-600">Poslední sezení</span>
+        <span class="font-medium text-surface-500 italic">Nebylo</span>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    header="Poznámky"
+    class="rounded-2xl border border-surface-200 shadow-sm overflow-hidden"
+  >
+    <p class="text-surface-600 text-sm leading-relaxed">
+      Zde můžete uvést interní poznámky ke klientovi, které nejsou viditelné pro ostatní uživatele.
+    </p>
+    <div class="mt-4">
+      <p-button
+        label="Přidat poznámku"
+        icon="pi pi-plus"
+        [text]="true"
+        size="small"
+      />
+    </div>
+  </p-card>
+</div>

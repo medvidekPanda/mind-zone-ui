@@ -1,0 +1,14 @@
+<p-select
+  [id]="id()"
+  [ngModel]="value()"
+  (ngModelChange)="value.set($event)"
+  [options]="options()"
+  optionLabel="label"
+  optionValue="value"
+  [placeholder]="placeholder()"
+  [showClear]="showClear()"
+  [invalid]="invalid()"
+  [disabled]="disabled()"
+  (onBlur)="touched.set(true)"
+  class="w-full"
+/>

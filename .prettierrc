@@ -1,11 +1,28 @@
 {
-  "printWidth": 100,
-  "singleQuote": true,
+  "singleQuote": false,
+  "semi": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "printWidth": 120,
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports"
+  ],
+  "importOrderParserPlugins": [
+    "typescript",
+    "[\"decorators\", { \"decoratorsBeforeExport\": true }]"
+  ],
+  "importOrder": [
+    "^@angular/(.*)$",
+    "<THIRD_PARTY_MODULES>",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
   "overrides": [
     {
       "files": "*.html",
       "options": {
-        "parser": "angular"
+        "singleAttributePerLine": true
       }
     }
   ]

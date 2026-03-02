@@ -3,13 +3,16 @@
     <h1 class="text-2xl font-bold text-slate-900 m-0">Klienti</h1>
     <p class="text-sm text-slate-500 m-0 mt-1">Správa klientských profilů</p>
   </div>
-  <a routerLink="/clients/new" pButton label="Nový klient" icon="pi pi-plus"></a>
+  <a
+    routerLink="/clients/new"
+    pButton
+    label="Nový klient"
+    icon="pi pi-plus"
+  ></a>
 </div>
 
 <!-- Filters -->
-<div
-  class="flex flex-wrap items-center gap-3 mb-5 p-4 bg-white rounded-xl border border-slate-200 shadow-sm"
->
+<div class="flex flex-wrap items-center gap-3 mb-5 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
   <p-iconfield class="flex-1 min-w-[200px]">
     <p-inputicon class="pi pi-search" />
     <input
@@ -35,17 +38,20 @@
 
 <!-- Table card -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-  <p-table [value]="clients()" class="p-datatable-sm">
+  @let _clients = clients();
+
+  <p-table
+    [value]="_clients"
+    [scrollable]="true"
+    scrollHeight="flex"
+    class="p-datatable-sm"
+  >
     <ng-template pTemplate="header">
       <tr class="bg-slate-800 text-white">
-        <th
-          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
-        >
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4">
           Klient
         </th>
-        <th
-          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
-        >
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4">
           E-mail
         </th>
         <th
@@ -60,7 +66,10 @@
         </th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-client>
+    <ng-template
+      pTemplate="body"
+      let-client
+    >
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
         <td class="px-6 py-4">
           <div class="flex items-center gap-3">
@@ -70,9 +79,7 @@
               {{ client.firstName[0] }}{{ client.lastName[0] }}
             </div>
             <div>
-              <p class="font-semibold text-slate-900 m-0 text-sm">
-                {{ client.firstName }} {{ client.lastName }}
-              </p>
+              <p class="font-semibold text-slate-900 m-0 text-sm">{{ client.firstName }} {{ client.lastName }}</p>
             </div>
           </div>
         </td>
@@ -89,23 +96,15 @@
             <a
               [routerLink]="['/clients', client.id]"
               pButton
-              icon="pi pi-eye"
-              [rounded]="true"
-              [text]="true"
-              severity="secondary"
-              size="small"
-              pTooltip="Detail"
-            ></a>
-            <a
-              [routerLink]="['/clients', client.id, 'edit']"
-              pButton
               icon="pi pi-pencil"
               [rounded]="true"
               [text]="true"
               severity="secondary"
               size="small"
               pTooltip="Upravit"
+              role="button"
             ></a>
+
             <button
               type="button"
               pButton
@@ -123,7 +122,10 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="4" class="py-16 text-center text-slate-400 italic">
+        <td
+          colspan="4"
+          class="py-16 text-center text-slate-400 italic"
+        >
           <i class="pi pi-search text-4xl block mb-3 opacity-20"></i>
           Žádní klienti nebyli nalezeni.
         </td>
