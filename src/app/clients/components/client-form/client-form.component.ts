@@ -43,8 +43,17 @@ export class ClientFormComponent {
   });
 
   readonly clientDetail = input<Client | undefined>(undefined);
-  readonly genderOptions = input.required<{ label: string; value: ClientGender }[]>();
-  readonly statusOptions = input.required<{ label: string; value: ClientStatus }[]>();
+
+  protected readonly genderOptions: { label: string; value: ClientGender }[] = [
+    { label: "Muž", value: ClientGender.MALE },
+    { label: "Žena", value: ClientGender.FEMALE },
+    { label: "Jiné", value: ClientGender.OTHER },
+  ];
+
+  protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
+    { label: "Aktivní", value: ClientStatus.ACTIVE },
+    { label: "Neaktivní", value: ClientStatus.INACTIVE },
+  ];
 
   protected readonly clientForm = form(this.clientModel, (schemaPath) => {
     required(schemaPath.firstName, { message: "Jméno je povinné" });

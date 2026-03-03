@@ -12,7 +12,7 @@ import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { take } from "rxjs";
 
-import { ClientGender, ClientStatus } from "../shared/interfaces/client.interface";
+import { ClientStatus } from "../shared/interfaces/client.interface";
 import { ClientService } from "../shared/service/client.service";
 
 @Component({
@@ -41,19 +41,13 @@ export class ClientsListComponent {
     defaultValue: [],
   });
 
-  protected readonly clients = computed(() => this.clientListResource.value());
-  protected readonly ClientStatus = ClientStatus;
-
-  protected readonly genderOptions = signal<{ label: string; value: ClientGender }[]>([
-    { label: "Muž", value: ClientGender.MALE },
-    { label: "Žena", value: ClientGender.FEMALE },
-    { label: "Jiné", value: ClientGender.OTHER },
-  ]);
-
   protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
     { label: "Aktivní", value: ClientStatus.ACTIVE },
     { label: "Neaktivní", value: ClientStatus.INACTIVE },
   ];
+
+  protected readonly clients = computed(() => this.clientListResource.value());
+  protected readonly ClientStatus = ClientStatus;
 
   protected readonly statusFilter = signal<ClientStatus | null>(null);
 
