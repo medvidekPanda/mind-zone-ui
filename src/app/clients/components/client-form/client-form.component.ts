@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, input, model, output } from "@angular/core";
-import { FormField, form, required } from "@angular/forms/signals";
+import { FormField, form, readonly, required } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
@@ -43,6 +43,7 @@ export class ClientFormComponent {
   });
 
   readonly clientDetail = input<Client | undefined>(undefined);
+  readonly readonly = input<boolean>(false);
 
   protected readonly genderOptions: { label: string; value: ClientGender }[] = [
     { label: "Muž", value: ClientGender.MALE },
@@ -58,6 +59,13 @@ export class ClientFormComponent {
   protected readonly clientForm = form(this.clientModel, (schemaPath) => {
     required(schemaPath.firstName, { message: "Jméno je povinné" });
     required(schemaPath.lastName, { message: "Příjmení je povinné" });
+
+    readonly(schemaPath.gender, this.readonly);
+    readonly(schemaPath.status, this.readonly);
+    readonly(schemaPath.birthDate, this.readonly);
+    readonly(schemaPath.email, this.readonly);
+    readonly(schemaPath.firstName, this.readonly);
+    readonly(schemaPath.lastName, this.readonly);
   });
 
   readonly formChanged = output<ClientPayload>();

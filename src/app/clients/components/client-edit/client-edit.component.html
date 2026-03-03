@@ -1,0 +1,33 @@
+<app-page-header
+  [title]="editing() ? 'Úprava klienta' : 'Detail klienta: ' + client().firstName + ' ' + client().lastName"
+>
+  <div actions class="flex gap-2">
+    <a routerLink="/clients" pButton label="Zpět na seznam" icon="pi pi-arrow-left" severity="secondary" [text]="true"></a>
+    @if (editing()) {
+      <button (click)="cancelEdit.emit()" type="button" pButton label="Zrušit úpravy" icon="pi pi-times" severity="secondary"></button>
+      <button (click)="save.emit()" type="button" pButton label="Uložit" icon="pi pi-check"></button>
+    } @else {
+      <button (click)="startEdit.emit()" type="button" pButton label="Upravit klienta" icon="pi pi-user-edit"></button>
+    }
+  </div>
+</app-page-header>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-1">
+    <app-client-profile-card [client]="client()" />
+    <app-client-stats class="mt-6" />
+  </div>
+
+  <div class="lg:col-span-2 space-y-6">
+    <p-card
+      [header]="editing() ? 'Úprava klienta' : 'Údaje klienta'"
+      class="rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full"
+    >
+      <app-client-form
+        [clientDetail]="client()"
+        [readonly]="!editing()"
+        (formChanged)="formChanged.emit($event)"
+      />
+    </p-card>
+  </div>
+</div>
