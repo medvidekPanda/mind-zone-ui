@@ -1,6 +1,8 @@
 export enum ClientStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE",
+  DELETED = "DELETED",
+  PENDING = "PENDING",
 }
 
 export enum ClientGender {

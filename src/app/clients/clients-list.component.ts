@@ -12,15 +12,8 @@ import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { take } from "rxjs";
 
+import { ClientGender, ClientStatus } from "../shared/interfaces/client.interface";
 import { ClientService } from "../shared/service/client.service";
-
-interface ClientRow {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  status: "active" | "inactive";
-}
 
 @Component({
   selector: "app-clients-list",
@@ -49,17 +42,42 @@ export class ClientsListComponent {
   });
 
   protected readonly clients = computed(() => this.clientListResource.value());
+  protected readonly ClientStatus = ClientStatus;
+
+  protected readonly genderOptions = signal<{ label: string; value: ClientGender }[]>([
+    { label: "Muž", value: ClientGender.MALE },
+    { label: "Žena", value: ClientGender.FEMALE },
+    { label: "Jiné", value: ClientGender.OTHER },
+  ]);
+
+  protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
+    { label: "Aktivní", value: ClientStatus.ACTIVE },
+    { label: "Neaktivní", value: ClientStatus.INACTIVE },
+  ];
+
+  protected readonly statusFilter = signal<ClientStatus | null>(null);
 
   /**
-   * @todo generovaný bordel
+   * @todo toto je filtrace na straně frontendu, bychom měli použít filtrace na straně backendu
+   * Na bekendu nemáme zatím filtraci hotovou
    */
-  protected readonly searchText = signal("");
-  protected readonly statusFilter = signal<string | null>(null);
-  protected readonly statusOptions = signal([
-    { label: "Všechny", value: null },
-    { label: "Aktivní", value: "active" },
-    { label: "Neaktivní", value: "inactive" },
-  ]);
+  protected onStatusFilterChange(
+    value: ClientStatus | null,
+    table: {
+      filter: (v: unknown, f: string, m: string) => void;
+      clearFilterValues: () => void;
+      filterGlobal: (v: string, matchMode: string) => void;
+    },
+    globalFilterInput: HTMLInputElement,
+  ): void {
+    this.statusFilter.set(value);
+    if (value === null) {
+      table.clearFilterValues();
+      table.filterGlobal(globalFilterInput.value, "contains");
+    } else {
+      table.filter(value, "status", "equals");
+    }
+  }
 
   protected deleteClient(_id: string): void {
     this.clientService.deleteClient(_id).pipe(take(1)).subscribe();

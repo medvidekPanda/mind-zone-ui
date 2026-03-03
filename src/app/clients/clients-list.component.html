@@ -11,39 +11,17 @@
   ></a>
 </div>
 
-<!-- Filters -->
-<div class="flex flex-wrap items-center gap-3 mb-5 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-  <p-iconfield class="flex-1 min-w-[200px]">
-    <p-inputicon class="pi pi-search" />
-    <input
-      pInputText
-      type="text"
-      [ngModel]="searchText()"
-      (ngModelChange)="searchText.set($event)"
-      placeholder="Vyhledat klienta…"
-      class="w-full"
-    />
-  </p-iconfield>
-  <p-select
-    [options]="statusOptions()"
-    [ngModel]="statusFilter()"
-    (ngModelChange)="statusFilter.set($event)"
-    optionLabel="label"
-    optionValue="value"
-    placeholder="Stav klienta"
-    [showClear]="true"
-    class="w-full md:w-52"
-  />
-</div>
-
 <!-- Table card -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
   @let _clients = clients();
 
   <p-table
+    #clientsTable
     [value]="_clients"
     [scrollable]="true"
     scrollHeight="flex"
+    [globalFilterFields]="['firstName', 'lastName', 'email']"
+    [filterDelay]="300"
     class="p-datatable-sm"
   >
     <ng-template pTemplate="header">
@@ -65,6 +43,49 @@
           Akce
         </th>
       </tr>
+      <tr class="!bg-slate-100 !border-b border-slate-200">
+        <th class="!bg-slate-100 !border-0 px-6 py-2">
+          <p-iconfield class="w-full">
+            <p-inputicon class="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              #globalFilterRef
+              (input)="clientsTable.filterGlobal(globalFilterRef.value, 'contains')"
+              placeholder="Vyhledat klienta…"
+              class="w-full text-sm"
+            />
+          </p-iconfield>
+        </th>
+
+        <th class="!bg-slate-100 !border-0 px-6 py-2">
+          <p-iconfield class="w-full">
+            <p-inputicon class="pi pi-envelope" />
+            <input
+              pInputText
+              type="text"
+              #emailFilterRef
+              (input)="clientsTable.filter(emailFilterRef.value, 'email', 'contains')"
+              placeholder="Filtrovat e-mail…"
+              class="w-full text-sm"
+            />
+          </p-iconfield>
+        </th>
+
+        <th class="!bg-slate-100 !border-0 px-6 py-2">
+          <p-select
+            [options]="statusOptions"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="onStatusFilterChange($event, clientsTable, globalFilterRef)"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Stav"
+            [showClear]="true"
+            class="w-full text-sm"
+          />
+        </th>
+        <th class="!bg-slate-100 !border-0 px-6 py-2"></th>
+      </tr>
     </ng-template>
     <ng-template
       pTemplate="body"
@@ -83,14 +104,17 @@
             </div>
           </div>
         </td>
+
         <td class="px-6 py-4 text-sm text-slate-600">{{ client.email }}</td>
+
         <td class="px-6 py-4 text-center">
           <p-tag
-            [value]="client.status === 'active' ? 'Aktivní' : 'Neaktivní'"
-            [severity]="client.status === 'active' ? 'success' : 'secondary'"
+            [value]="client.status === ClientStatus.ACTIVE ? 'Aktivní' : 'Neaktivní'"
+            [severity]="client.status === ClientStatus.ACTIVE ? 'success' : 'secondary'"
             [rounded]="true"
           />
         </td>
+
         <td class="px-6 py-4 text-right">
           <div class="flex justify-end gap-1">
             <a
@@ -120,6 +144,7 @@
         </td>
       </tr>
     </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td
