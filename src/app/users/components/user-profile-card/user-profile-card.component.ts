@@ -4,16 +4,16 @@ import { AvatarModule } from "primeng/avatar";
 import { CardModule } from "primeng/card";
 import { TagModule } from "primeng/tag";
 
-import { Client, ClientStatus } from "../../../shared/interfaces/client.interface";
+import { User, UserRole } from "../../../shared/interfaces/user.interface";
 
 @Component({
-  selector: "app-client-profile-card",
+  selector: "app-user-profile-card",
   standalone: true,
   imports: [AvatarModule, CardModule, TagModule],
-  templateUrl: "./client-profile-card.component.html",
+  templateUrl: "./user-profile-card.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClientProfileCardComponent {
-  readonly client = input.required<Client>();
-  readonly ClientStatus = ClientStatus;
+export class UserProfileCardComponent {
+  readonly user = input.required<User>();
+  readonly UserRole = UserRole;
 }

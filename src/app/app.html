@@ -9,9 +9,16 @@
         <a
           routerLink="/dashboard"
           class="flex items-center gap-2 no-underline text-slate-900 font-bold text-lg mr-6"
+          title="Tato aplikace je ve fázi alpha – funkce se mohou měnit"
         >
-          <span class="w-8 h-8 rounded-lg bg-teal-500 flex items-center justify-center text-white text-sm">MZ</span>
-          Mind Zone
+          <span
+            class="w-8 h-8 shrink-0 rounded-lg bg-teal-500 flex items-center justify-center text-white text-sm font-bold"
+            >MZ</span
+          >
+          <span class="flex flex-col items-start">
+            <span class="text-[10px] font-semibold text-amber-600 uppercase tracking-wide leading-none">Alpha</span>
+            <span>Mind Zone</span>
+          </span>
         </a>
       </ng-template>
       <ng-template #end>

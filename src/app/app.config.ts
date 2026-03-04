@@ -1,11 +1,27 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners } from "@angular/core";
+import { provideClientHydration, withEventReplay } from "@angular/platform-browser";
+import { provideAnimations } from "@angular/platform-browser/animations";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
 
-import { routes } from './app.routes';
+import { definePreset } from "@primeuix/themes";
+import Aura from "@primeuix/themes/aura";
+import { providePrimeNG } from "primeng/config";
+
+import { routes } from "./app.routes";
+
+const appPreset = definePreset(Aura, {
+  components: {
+    avatar: {
+      xl: {
+        width: "8rem",
+        height: "8rem",
+        fontSize: "2.25rem",
+        icon: { size: "2.25rem" },
+        group: { offset: "-0.5rem" },
+      },
+    },
+  },
+});
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,10 +32,10 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       ripple: true,
       theme: {
-        preset: Aura,
+        preset: appPreset,
         options: {
-          prefix: 'p',
-          darkModeSelector: 'light',
+          prefix: "p",
+          darkModeSelector: "light",
           cssLayer: false,
         },
       },

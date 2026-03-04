@@ -13,7 +13,7 @@ export const routes: Routes = [
   {
     path: "users/new",
     loadComponent: () =>
-      import("./users/components/user-register/user-register.component").then((m) => m.UserRegisterComponent),
+      import("./users/components/user-detail/user-detail.component").then((m) => m.UserDetailComponent),
   },
   {
     path: "users/:id",

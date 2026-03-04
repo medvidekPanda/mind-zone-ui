@@ -1,0 +1,56 @@
+<form class="flex flex-col gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="flex flex-col gap-2">
+      <label for="firstName">Jméno</label>
+      <input
+        pInputText
+        id="firstName"
+        [formField]="userForm.firstName"
+        class="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="lastName">Příjmení</label>
+      <input
+        pInputText
+        id="lastName"
+        [formField]="userForm.lastName"
+        class="w-full"
+      />
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label for="email">E-mail</label>
+    <input
+      pInputText
+      id="email"
+      type="email"
+      [formField]="userForm.email"
+      class="w-full"
+    />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label for="role">Role</label>
+    <app-form-select
+      id="role"
+      [formField]="userForm.role"
+      [options]="roleOptions"
+      placeholder="Vyberte"
+      [showClear]="true"
+    />
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <label for="firebaseId">Firebase ID (volitelné)</label>
+    <input
+      pInputText
+      id="firebaseId"
+      [formField]="userForm.firebaseId"
+      class="w-full"
+      placeholder="Propojení s Firebase účtem"
+    />
+  </div>
+</form>

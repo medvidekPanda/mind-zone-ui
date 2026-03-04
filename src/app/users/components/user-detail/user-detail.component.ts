@@ -1,47 +1,54 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
+import { rxResource, toSignal } from "@angular/core/rxjs-interop";
+import { ActivatedRoute, Router } from "@angular/router";
+
+import { ButtonModule } from "primeng/button";
+import { CardModule } from "primeng/card";
+import { TagModule } from "primeng/tag";
+import { of, take } from "rxjs";
+
+import { User, UserPayload } from "../../../shared/interfaces/user.interface";
+import { UserService } from "../../../shared/service/user.service";
+import { UserCreateComponent } from "../user-create/user-create.component";
+import { UserEditComponent } from "../user-edit/user-edit.component";
 
 @Component({
-  selector: 'app-user-detail',
+  selector: "app-user-detail",
   standalone: true,
-  imports: [
-    PageHeaderComponent,
-    RouterLink,
-    FormsModule,
-    ButtonModule,
-    CardModule,
-    InputTextModule,
-    TagModule,
-  ],
-  templateUrl: './user-detail.component.html',
-  host: { class: 'flex flex-col' },
+  imports: [ButtonModule, CardModule, UserCreateComponent, UserEditComponent, TagModule],
+  templateUrl: "./user-detail.component.html",
+  host: { class: "flex flex-col" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserDetailComponent {
-  readonly id = input.required<string>();
-  protected readonly user = signal({
-    firstName: 'Anna',
-    lastName: 'Nováková',
-    firebaseId: 'firebase-id-xxx',
-    role: 'terapeut',
-  });
-  protected readonly editing = signal(false);
+  private readonly userService = inject(UserService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  protected readonly editFirebaseId = signal('');
-  protected readonly editFirstName = signal('');
-  protected readonly editLastName = signal('');
+  private userPayload: UserPayload | undefined;
+  private readonly paramMap = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
+  });
+  private readonly refreshTrigger = signal(0);
+
+  protected readonly id = computed(() => this.paramMap()?.get("id") ?? undefined);
+
+  private readonly userResource = rxResource({
+    params: () => ({ id: this.id(), refresh: this.refreshTrigger() }),
+    stream: ({ params }) => {
+      const { id } = params;
+      if (!id) return of({} as User);
+
+      return this.userService.getUser(id);
+    },
+    defaultValue: {} as User,
+  });
+
+  protected readonly user = computed(() => this.userResource.value());
+  protected readonly editing = signal(false);
+  protected readonly isNewUser = computed(() => !this.id());
 
   protected startEdit(): void {
-    const u = this.user();
-    this.editFirebaseId.set(u.firebaseId);
-    this.editFirstName.set(u.firstName);
-    this.editLastName.set(u.lastName);
     this.editing.set(true);
   }
 
@@ -49,13 +56,38 @@ export class UserDetailComponent {
     this.editing.set(false);
   }
 
-  protected saveEdit(): void {
-    this.user.update((u) => ({
-      ...u,
-      firebaseId: this.editFirebaseId(),
-      firstName: this.editFirstName(),
-      lastName: this.editLastName(),
-    }));
-    this.editing.set(false);
+  protected cancel(): void {
+    if (this.id()) {
+      this.cancelEdit();
+    } else {
+      this.router.navigate(["/users"]);
+    }
+  }
+
+  protected onSave(): void {
+    const { id } = this.user();
+    if (!this.userPayload) return;
+
+    if (id) {
+      this.userService
+        .updateUser(id, this.userPayload)
+        .pipe(take(1))
+        .subscribe(() => {
+          this.refreshTrigger.update((v) => v + 1);
+          this.editing.set(false);
+        });
+      return;
+    }
+
+    this.userService
+      .createUser(this.userPayload)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.router.navigate(["/users"]);
+      });
+  }
+
+  protected onFormChanged(form: UserPayload): void {
+    this.userPayload = form;
   }
 }

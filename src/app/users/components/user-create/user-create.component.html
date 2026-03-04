@@ -1,0 +1,36 @@
+<app-page-header [title]="'Nový uživatel'">
+  <a
+    routerLink="/users"
+    pButton
+    label="Zpět"
+    icon="pi pi-arrow-left"
+    actions
+  ></a>
+</app-page-header>
+
+<div class="flex flex-col gap-6">
+  <p-card class="rounded-2xl border border-slate-200 shadow-sm max-w-2xl">
+    <app-user-form
+      [userDetail]="user()"
+      (formChanged)="formChanged.emit($event)"
+    />
+  </p-card>
+  <div class="flex gap-2">
+    <button
+      (click)="save.emit()"
+      type="button"
+      pButton
+      label="Uložit"
+      icon="pi pi-check"
+    ></button>
+    <button
+      (click)="cancel.emit()"
+      type="button"
+      pButton
+      label="Zrušit"
+      icon="pi pi-times"
+      severity="secondary"
+      [text]="true"
+    ></button>
+  </div>
+</div>
