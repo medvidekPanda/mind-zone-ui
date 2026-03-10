@@ -46,9 +46,7 @@ export const routes: Routes = [
   {
     path: "sessions/new",
     loadComponent: () =>
-      import("./sessions/components/session-schedule/session-schedule.component").then(
-        (m) => m.SessionScheduleComponent,
-      ),
+      import("./sessions/components/session-detail/session-detail.component").then((m) => m.SessionDetailComponent),
   },
   {
     path: "sessions/calendar",

@@ -1,0 +1,36 @@
+<div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5">
+  <p class="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-3">Akce</p>
+  <div class="space-y-1">
+    <button
+      type="button"
+      pButton
+      label="Generovat fakturu"
+      icon="pi pi-file-pdf"
+      severity="secondary"
+      styleClass="w-full"
+      [text]="true"
+      (click)="generateInvoice.emit()"
+    ></button>
+    <button
+      type="button"
+      pButton
+      label="Odeslat shrnutí e-mailem"
+      icon="pi pi-envelope"
+      severity="secondary"
+      styleClass="w-full"
+      [text]="true"
+      (click)="sendSummary.emit()"
+    ></button>
+    <p-divider />
+    <button
+      type="button"
+      pButton
+      label="Smazat záznam"
+      icon="pi pi-trash"
+      severity="danger"
+      styleClass="w-full"
+      [text]="true"
+      (click)="delete.emit()"
+    ></button>
+  </div>
+</div>

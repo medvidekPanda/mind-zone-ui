@@ -12,36 +12,51 @@
       severity="secondary"
       outlined
     ></a>
-    <a routerLink="/sessions/new" pButton label="Naplánovat sezení" icon="pi pi-plus"></a>
+    <a
+      routerLink="/sessions/new"
+      pButton
+      label="Nové sezení"
+      icon="pi pi-plus"
+    ></a>
   </div>
 </div>
 
+<!-- Table card -->
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-  <p-table [value]="sessions()" class="p-datatable-sm">
+  @let _sessions = sessions();
+
+  <p-table
+    #sessionsTable
+    [value]="_sessions"
+    [scrollable]="true"
+    scrollHeight="flex"
+    [globalFilterFields]="['date', 'time', 'therapistName', 'clientName', 'form']"
+    [filterDelay]="300"
+    class="p-datatable-sm"
+  >
     <ng-template pTemplate="header">
-      <tr>
+      <tr class="bg-slate-800 text-white">
         <th
           class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
-        >
-          Datum a čas
-        </th>
-        <th
-          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
-        >
-          Terapeut
-        </th>
-        <th
-          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+          style="min-width: 160px"
         >
           Klient
         </th>
         <th
           class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+          style="min-width: 160px"
+        >
+          Terapeut
+        </th>
+        <th
+          class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+          style="min-width: 130px"
         >
           Délka
         </th>
         <th
           class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4"
+          style="min-width: 140px"
         >
           Forma
         </th>
@@ -50,21 +65,113 @@
         >
           Platba
         </th>
+        <th class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4">
+          Datum a čas
+        </th>
         <th
           class="!bg-slate-800 !text-slate-300 !font-semibold !text-xs !uppercase !tracking-wide px-6 py-4 text-right"
         >
           Akce
         </th>
       </tr>
+      <tr class="!bg-slate-100 !border-b border-slate-200">
+        <th
+          class="!bg-slate-100 !border-0 px-6 py-2"
+          style="min-width: 160px"
+        >
+          <p-iconfield class="w-full">
+            <p-inputicon class="pi pi-user" />
+            <input
+              pInputText
+              type="text"
+              #clientFilterRef
+              (input)="sessionsTable.filter(clientFilterRef.value, 'clientName', 'contains')"
+              placeholder="Filtrovat klienta…"
+              class="w-full text-sm"
+            />
+          </p-iconfield>
+        </th>
+        <th
+          class="!bg-slate-100 !border-0 px-6 py-2"
+          style="min-width: 160px"
+        >
+          <p-iconfield class="w-full">
+            <p-inputicon class="pi pi-user" />
+            <input
+              pInputText
+              type="text"
+              #therapistFilterRef
+              (input)="sessionsTable.filter(therapistFilterRef.value, 'therapistName', 'contains')"
+              placeholder="Filtrovat terapeuta…"
+              class="w-full text-sm"
+            />
+          </p-iconfield>
+        </th>
+        <th
+          class="!bg-slate-100 !border-0 px-6 py-2"
+          style="min-width: 130px"
+        >
+          <p-select
+            [options]="durationOptions"
+            [ngModel]="durationFilter()"
+            (ngModelChange)="onDurationFilterChange($event, sessionsTable)"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Délka"
+            [showClear]="true"
+            class="w-full text-sm"
+          />
+        </th>
+        <th
+          class="!bg-slate-100 !border-0 px-6 py-2"
+          style="min-width: 140px"
+        >
+          <p-select
+            [options]="formOptions"
+            [ngModel]="formFilter()"
+            (ngModelChange)="onFormFilterChange($event, sessionsTable)"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Forma"
+            [showClear]="true"
+            class="w-full text-sm"
+          />
+        </th>
+        <th class="!bg-slate-100 !border-0 px-6 py-2">
+          <p-select
+            [options]="paidOptions"
+            [ngModel]="paidFilter()"
+            (ngModelChange)="onPaidFilterChange($event, sessionsTable, globalFilterRef)"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Platba"
+            [showClear]="true"
+            class="w-full text-sm"
+          />
+        </th>
+        <th class="!bg-slate-100 !border-0 px-6 py-2">
+          <p-iconfield class="w-full">
+            <p-inputicon class="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              #globalFilterRef
+              (input)="sessionsTable.filterGlobal(globalFilterRef.value, 'contains')"
+              placeholder="Vyhledat…"
+              class="w-full text-sm"
+            />
+          </p-iconfield>
+        </th>
+        <th class="!bg-slate-100 !border-0 px-6 py-2"></th>
+      </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-session>
+    <ng-template
+      pTemplate="body"
+      let-session
+    >
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-        <td class="px-6 py-4">
-          <p class="font-semibold text-slate-900 m-0 text-sm">{{ session.date }}</p>
-          <p class="text-xs text-slate-400 m-0 mt-0.5">{{ session.time }}</p>
-        </td>
-        <td class="px-6 py-4 text-sm text-slate-700">{{ session.therapistName }}</td>
         <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ session.clientName }}</td>
+        <td class="px-6 py-4 text-sm text-slate-700">{{ session.therapistName }}</td>
         <td class="px-6 py-4 text-sm text-slate-600">{{ session.duration }} min</td>
         <td class="px-6 py-4">
           <span
@@ -79,24 +186,45 @@
             [rounded]="true"
           />
         </td>
+        <td class="px-6 py-4">
+          <p class="font-semibold text-slate-900 m-0 text-sm">{{ session.date }}</p>
+          <p class="text-xs text-slate-400 m-0 mt-0.5">{{ session.time }}</p>
+        </td>
         <td class="px-6 py-4 text-right">
-          <a
-            [routerLink]="['/sessions', session.id]"
-            pButton
-            icon="pi pi-arrow-up-right"
-            [rounded]="true"
-            [text]="true"
-            severity="secondary"
-            size="small"
-            pTooltip="Detail sezení"
-          ></a>
+          <div class="flex justify-end gap-1">
+            <a
+              [routerLink]="['/sessions', session.id]"
+              pButton
+              icon="pi pi-pencil"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              pTooltip="Upravit"
+              role="button"
+            ></a>
+            <button
+              type="button"
+              pButton
+              icon="pi pi-trash"
+              [rounded]="true"
+              [text]="true"
+              severity="danger"
+              size="small"
+              (click)="deleteSession(session.id)"
+              pTooltip="Smazat"
+            ></button>
+          </div>
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7" class="py-16 text-center text-slate-400 italic">
-          <i class="pi pi-calendar-times text-4xl block mb-3 opacity-20"></i>
+        <td
+          colspan="7"
+          class="py-16 text-center text-slate-400 italic"
+        >
+          <i class="pi pi-search text-4xl block mb-3 opacity-20"></i>
           Žádná sezení nebyla nalezena.
         </td>
       </tr>

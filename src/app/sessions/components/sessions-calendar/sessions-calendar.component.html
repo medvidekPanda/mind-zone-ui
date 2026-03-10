@@ -1,10 +1,29 @@
 <app-page-header title="Kalendář konzultací">
-  <a routerLink="/sessions" pButton label="Seznam sezení" icon="pi pi-list" actions></a>
+  <div
+    actions
+    class="flex gap-2"
+  >
+    <a
+      routerLink="/sessions"
+      pButton
+      label="Seznam sezení"
+      icon="pi pi-list"
+      severity="secondary"
+      outlined
+    ></a>
+    <button
+      pButton
+      label="Naplánovat sezení"
+      icon="pi pi-plus"
+      (click)="openScheduleDialog()"
+    ></button>
+  </div>
 </app-page-header>
 
 <p-card>
   <p class="text-surface-600 mb-4">
-    Kalendář konzultací – zobrazení dle návrhu v API. Synchronizace (iCloud, Google, Outlook) bude doladěna při napojení na API.
+    Kalendář konzultací – zobrazení dle návrhu v API. Synchronizace (iCloud, Google, Outlook) bude doladěna při napojení
+    na API.
   </p>
   <h3 class="text-lg font-medium mt-0 mb-3">{{ currentMonth() }}</h3>
   <div class="border border-surface-200 rounded-lg p-4 min-h-[300px]">
@@ -13,11 +32,33 @@
         <li class="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-50 hover:bg-surface-100">
           <span class="font-medium">{{ ev.date }} {{ ev.time }} – {{ ev.title }}</span>
           <span class="flex gap-2">
-            <a [routerLink]="['/sessions', ev.id]" pButton label="Sezení" size="small" text></a>
-            <a [routerLink]="['/clients', ev.clientId]" pButton label="Klient" size="small" text></a>
+            <a
+              [routerLink]="['/sessions', ev.id]"
+              pButton
+              label="Sezení"
+              size="small"
+              text
+            ></a>
+            <a
+              [routerLink]="['/clients', ev.clientId]"
+              pButton
+              label="Klient"
+              size="small"
+              text
+            ></a>
           </span>
         </li>
       }
     </ul>
   </div>
 </p-card>
+
+<app-session-schedule-dialog
+  [(visible)]="scheduleDialogVisible"
+  [clientOptions]="clientOptions"
+  [therapistOptions]="therapistOptions"
+  [durationOptions]="durationOptions"
+  [formOptions]="formOptions"
+  [typeOptions]="typeOptions"
+  (save)="saveSchedule($event)"
+/>
