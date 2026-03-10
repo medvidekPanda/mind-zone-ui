@@ -52,8 +52,8 @@ export class ClientsListComponent {
   protected readonly statusFilter = signal<ClientStatus | null>(null);
 
   /**
-   * @todo toto je filtrace na straně frontendu, bychom měli použít filtrace na straně backendu
-   * Na bekendu nemáme zatím filtraci hotovou
+   * @todo this is client-side filtering; we should use server-side filtering
+   * Backend does not have filtering implemented yet
    */
   protected onStatusFilterChange(
     value: ClientStatus | null,

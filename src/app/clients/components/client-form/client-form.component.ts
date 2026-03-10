@@ -39,6 +39,7 @@ export class ClientFormComponent {
     gender: null,
     birthDate: "",
     email: "",
+    phone: "",
     status: null,
   });
 
@@ -64,6 +65,7 @@ export class ClientFormComponent {
     readonly(schemaPath.status, this.readonly);
     readonly(schemaPath.birthDate, this.readonly);
     readonly(schemaPath.email, this.readonly);
+    readonly(schemaPath.phone, this.readonly);
     readonly(schemaPath.firstName, this.readonly);
     readonly(schemaPath.lastName, this.readonly);
   });
@@ -80,12 +82,13 @@ export class ClientFormComponent {
       const client = this.clientDetail();
 
       if (client?.id) {
-        const { firstName, lastName, birthDate, email, gender, status } = client;
+        const { firstName, lastName, birthDate, email, phone, gender, status } = client;
         this.clientModel.set({
           firstName,
           lastName,
           birthDate,
           email,
+          phone: phone ?? "",
           gender,
           status,
         });
@@ -103,7 +106,7 @@ export class ClientFormComponent {
         this.formChanged.emit({
           ...value,
           /**
-           * @todo user id by měl být získán z auth service nebo s možností změny jako admin
+           * @todo user id should be obtained from auth service or with option to change as admin
            */
           userId: "019c9b5c-0b2c-74ae-bf97-036f30651efe",
           gender: value.gender,

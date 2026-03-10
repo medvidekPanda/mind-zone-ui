@@ -19,6 +19,7 @@ export interface Client {
   birthDate: string;
   status: ClientStatus;
   email: string;
+  phone: string;
   createdAt: string;
   updatedAt: string;
 }

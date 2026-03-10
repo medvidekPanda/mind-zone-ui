@@ -12,13 +12,16 @@
       outlined
     ></a>
     <button
+      type="button"
       pButton
       label="Naplánovat sezení"
       icon="pi pi-plus"
-      (click)="openScheduleDialog()"
+      (click)="scheduleDialogVisible.set(true)"
     ></button>
   </div>
 </app-page-header>
+
+<app-session-schedule-dialog [(visible)]="scheduleDialogVisible" />
 
 <p-card>
   <p class="text-surface-600 mb-4">
@@ -52,13 +55,3 @@
     </ul>
   </div>
 </p-card>
-
-<app-session-schedule-dialog
-  [(visible)]="scheduleDialogVisible"
-  [clientOptions]="clientOptions"
-  [therapistOptions]="therapistOptions"
-  [durationOptions]="durationOptions"
-  [formOptions]="formOptions"
-  [typeOptions]="typeOptions"
-  (save)="saveSchedule($event)"
-/>

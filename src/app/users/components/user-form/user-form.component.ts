@@ -64,10 +64,10 @@ export class UserFormComponent {
       if (user?.id) {
         const { firstName, lastName, email, role, firebaseId } = user;
         this.userModel.set({
-          firstName,
-          lastName,
-          email,
-          role,
+          firstName: firstName ?? "",
+          lastName: lastName ?? "",
+          email: email ?? "",
+          role: role ?? null,
           firebaseId: firebaseId ?? "",
         });
       }

@@ -7,10 +7,10 @@ import { CardModule } from "primeng/card";
 
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
 import { Session, SessionFormat, SessionPayload, SessionType } from "../../../shared/interfaces/session.interface";
+import { SessionFormComponent } from "../session-form/session-form.component";
 import { SessionAttachmentsComponent } from "./components/session-attachments/session-attachments.component";
 import { SessionPaymentCardComponent } from "./components/session-payment-card/session-payment-card.component";
 import { SessionQuickActionsComponent } from "./components/session-quick-actions/session-quick-actions.component";
-import { SessionFormComponent } from "../session-form/session-form.component";
 
 const MOCK_SESSIONS: Session[] = [
   {
@@ -74,10 +74,19 @@ export class SessionDetailComponent {
   private readonly paramMap = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
   });
+  private readonly queryParams = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
 
   protected readonly id = computed(() => this.paramMap()?.get("id") ?? undefined);
 
-  protected readonly session = computed(() => MOCK_SESSIONS.find((s) => s.id === this.id()) ?? ({} as Session));
+  protected readonly session = computed(() => {
+    const found = MOCK_SESSIONS.find((s) => s.id === this.id());
+    if (found) return found;
+
+    const clientId = this.queryParams()?.get("clientId") ?? "";
+    return { clientId } as Session;
+  });
   protected readonly editing = signal(false);
   protected readonly isNewSession = computed(() => !this.id());
   protected readonly paid = signal<boolean>(false);
@@ -118,28 +127,28 @@ export class SessionDetailComponent {
     const { id } = this.session();
 
     if (id) {
-      // TODO: nahradit voláním SessionService po napojení API
+      // TODO: replace with SessionService call after API integration
       this.editing.set(false);
       return;
     }
 
-    // TODO: nahradit voláním SessionService po napojení API
+    // TODO: replace with SessionService call after API integration
     this.router.navigate(["/sessions"]);
   }
 
   protected onFormChanged(_form: SessionPayload): void {
-    // TODO: uložit payload po napojení API
+    // TODO: save payload after API integration
   }
 
   protected onGenerateInvoice(): void {
-    // TODO: implementovat po napojení API
+    // TODO: implement after API integration
   }
 
   protected onSendSummary(): void {
-    // TODO: implementovat po napojení API
+    // TODO: implement after API integration
   }
 
   protected onDelete(): void {
-    // TODO: implementovat po napojení API
+    // TODO: implement after API integration
   }
 }

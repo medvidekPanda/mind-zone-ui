@@ -20,6 +20,6 @@ export class UserRegisterComponent {
   protected lastName = '';
 
   protected save(): void {
-    // Placeholder – bez API
+    // Placeholder – no API
   }
 }

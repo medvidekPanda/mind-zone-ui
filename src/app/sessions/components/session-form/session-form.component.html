@@ -1,7 +1,7 @@
 <form class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Hlavní sloupec: zápis -->
+  <!-- Main column: session notes -->
   <div class="lg:col-span-2 space-y-5">
-    <!-- Zápis ze sezení -->
+    <!-- Session notes -->
     <div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm overflow-hidden">
       <div class="px-5 pt-5 pb-3 border-b border-surface-100 flex items-center gap-2">
         <i class="pi pi-file-edit text-surface-500"></i>
@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <!-- Témata sezení -->
+    <!-- Session topics -->
     <div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5">
       <div class="flex items-center gap-2 mb-3">
         <i class="pi pi-tag text-surface-400"></i>
@@ -66,9 +66,9 @@
     </div>
   </div>
 
-  <!-- Postranní panel: metadata a platba -->
+  <!-- Side panel: metadata and payment -->
   <div class="space-y-5">
-    <!-- Základní údaje -->
+    <!-- Basic details -->
     <div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5 space-y-4">
       <h4 class="m-0 text-xs font-semibold text-surface-400 uppercase tracking-wide">Základní údaje</h4>
 
@@ -102,35 +102,63 @@
         />
       </div>
 
+      <div class="flex flex-col gap-1">
+        <label
+          for="date"
+          class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
+          >Datum</label
+        >
+        <app-form-datepicker
+          id="date"
+          [formField]="sessionForm.date"
+          placeholder="Datum"
+        />
+      </div>
+
       <div class="grid grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label
-            for="date"
+            for="startTime"
             class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
-            >Datum</label
-          >
-          <app-form-datepicker
-            id="date"
-            [formField]="sessionForm.date"
-            placeholder="Datum"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label
-            for="time"
-            class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
-            >Čas</label
+            >Začátek</label
           >
           <p-datepicker
-            id="time"
-            [(ngModel)]="time"
-            name="time"
+            id="startTime"
+            [(ngModel)]="startTime"
+            name="startTime"
             timeOnly
             placeholder="HH:mm"
             [disabled]="readonly()"
             class="w-full"
           ></p-datepicker>
         </div>
+        <div class="flex flex-col gap-1">
+          <label
+            for="endTime"
+            class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
+            >Konec</label
+          >
+          <p-datepicker
+            id="endTime"
+            [(ngModel)]="endTime"
+            name="endTime"
+            timeOnly
+            placeholder="HH:mm"
+            [disabled]="readonly()"
+            class="w-full"
+          ></p-datepicker>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-surface-400 uppercase tracking-wide">Délka sezení</label>
+        <span class="text-sm text-surface-600 py-2">
+          @if (duration(); as d) {
+            {{ d }} min
+          } @else {
+            <span class="text-surface-300 italic">Vyplňte začátek a konec</span>
+          }
+        </span>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -162,21 +190,6 @@
             [showClear]="true"
           />
         </div>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <label
-          for="duration"
-          class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
-          >Délka sezení</label
-        >
-        <app-form-select
-          id="duration"
-          [formField]="sessionForm.duration"
-          [options]="durationOptions"
-          placeholder="Vyberte délku"
-          [showClear]="true"
-        />
       </div>
 
       <div class="flex flex-col gap-1">

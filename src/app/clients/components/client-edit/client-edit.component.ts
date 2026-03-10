@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, model, output } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 
+import { SessionScheduleDialogComponent } from "../../../sessions/components/session-schedule-dialog/session-schedule-dialog.component";
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
 import { Client, ClientPayload } from "../../../shared/interfaces/client.interface";
 import { ClientFormComponent } from "../client-form/client-form.component";
@@ -21,6 +22,7 @@ import { ClientStatsComponent } from "../client-stats/client-stats.component";
     ClientStatsComponent,
     PageHeaderComponent,
     RouterLink,
+    SessionScheduleDialogComponent,
   ],
   templateUrl: "./client-edit.component.html",
   host: { class: "flex flex-col" },
@@ -34,4 +36,6 @@ export class ClientEditComponent {
   readonly cancelEdit = output<void>();
   readonly startEdit = output<void>();
   readonly formChanged = output<ClientPayload>();
+
+  protected readonly scheduleDialogVisible = model(false);
 }

@@ -121,6 +121,6 @@ export class SessionsListComponent {
   }
 
   protected deleteSession(_id: string): void {
-    // Placeholder – bez API
+    // Placeholder – no API
   }
 }

@@ -7,6 +7,8 @@
       <button (click)="cancelEdit.emit()" type="button" pButton label="Zrušit úpravy" icon="pi pi-times" severity="secondary"></button>
       <button (click)="save.emit()" type="button" pButton label="Uložit" icon="pi pi-check"></button>
     } @else {
+      <button type="button" pButton label="Naplánovat sezení" icon="pi pi-calendar-plus" severity="secondary" [outlined]="true" (click)="scheduleDialogVisible.set(true)"></button>
+      <a [routerLink]="['/sessions/new']" [queryParams]="{ clientId: client().id }" pButton label="Nové sezení" icon="pi pi-plus" severity="success"></a>
       <button (click)="startEdit.emit()" type="button" pButton label="Upravit klienta" icon="pi pi-user-edit"></button>
     }
   </div>
@@ -31,3 +33,8 @@
     </p-card>
   </div>
 </div>
+
+<app-session-schedule-dialog
+  [(visible)]="scheduleDialogVisible"
+  [clientId]="client().id"
+/>
