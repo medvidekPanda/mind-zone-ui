@@ -72,20 +72,20 @@ export class SessionDetailComponent {
   private readonly router = inject(Router);
 
   private readonly paramMap = toSignal(this.route.paramMap, {
-    initialValue: this.route.snapshot.paramMap,
+    initialValue: null,
   });
-  private readonly queryParams = toSignal(this.route.queryParamMap, {
+  private readonly queryParamMap = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
   });
 
-  protected readonly id = computed(() => this.paramMap()?.get("id") ?? undefined);
+  protected readonly clientIdFromUrl = computed(() => this.queryParamMap()?.get("clientId") ?? null);
+  protected readonly id = computed(() => this.paramMap()?.get("id") ?? null);
 
   protected readonly session = computed(() => {
     const found = MOCK_SESSIONS.find((s) => s.id === this.id());
     if (found) return found;
 
-    const clientId = this.queryParams()?.get("clientId") ?? "";
-    return { clientId } as Session;
+    return { clientId: this.clientIdFromUrl() } as Session;
   });
   protected readonly editing = signal(false);
   protected readonly isNewSession = computed(() => !this.id());

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
@@ -11,6 +11,7 @@ import { MultiSelectModule } from "primeng/multiselect";
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { Session, SessionFormat, SessionPayload, SessionType } from "../../../shared/interfaces/session.interface";
+import { ClientStore } from "../../../shared/store/client.store";
 
 type SessionFormModel = {
   date: string | null;
@@ -40,6 +41,10 @@ type SessionFormModel = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionFormComponent {
+  private readonly clientStore = inject(ClientStore);
+
+  protected readonly clients = computed(() => this.clientStore.clients());
+
   readonly sessionModel = model<SessionFormModel>({
     date: null,
     format: null,
@@ -50,6 +55,7 @@ export class SessionFormComponent {
     therapistId: null,
   });
 
+  readonly clientId = input<string | null>(null);
   readonly sessionDetail = input<Session | undefined>(undefined);
   readonly readonly = input<boolean>(false);
 
@@ -58,6 +64,11 @@ export class SessionFormComponent {
   readonly tags = model<string[]>([]);
   readonly price = model<number | null>(null);
   readonly paid = model<boolean>(false);
+
+  protected clientOptions = computed(() => {
+    const clients = this.clientStore.clients();
+    return clients.map((client) => ({ label: `${client.firstName} ${client.lastName}`, value: client.id }));
+  });
 
   protected readonly duration = computed(() => {
     const start = this.startTime();
@@ -88,12 +99,8 @@ export class SessionFormComponent {
     { label: "Rodina", value: "rodina" },
   ];
 
-  // Placeholder – to be loaded from API
+  // // Placeholder – to be loaded from API
   protected readonly therapistOptions = [{ label: "Anna Nováková", value: "1" }];
-  protected readonly clientOptions = [
-    { label: "Jan Novák", value: "c1" },
-    { label: "Marie Svobodová", value: "c2" },
-  ];
 
   protected readonly sessionForm = form(this.sessionModel, (schemaPath) => {
     required(schemaPath.date, { message: "Datum je povinné" });
@@ -126,11 +133,28 @@ export class SessionFormComponent {
   constructor() {
     this.initDetailEffect();
     this.initOutputEffect();
+    this.initClientOptionsEffect();
+  }
+
+  private initClientOptionsEffect(): void {
+    effect(() => {
+      const clients = this.clientStore.clients();
+
+      if (clients.length === 0) {
+        this.clientStore.loadAll();
+      }
+    });
   }
 
   private initDetailEffect(): void {
     effect(() => {
       const session = this.sessionDetail();
+      const clientId = this.clientId();
+
+      if (clientId) {
+        this.sessionModel.update((model) => ({ ...model, clientId }));
+      }
+
       if (!session) return;
 
       if (session.id) {

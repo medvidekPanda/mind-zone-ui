@@ -1,13 +1,13 @@
-@if (isNewClient()) {
+@let _newClient = isNewClient();
+
+@if (_newClient) {
   <app-client-create
-    [client]="client()"
     (formChanged)="onFormChanged($event)"
     (save)="onSave()"
     (cancel)="cancel()"
   />
 } @else {
   <app-client-edit
-    [client]="client()"
     [editing]="editing()"
     (formChanged)="onFormChanged($event)"
     (save)="onSave()"

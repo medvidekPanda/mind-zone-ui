@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
-import { rxResource } from "@angular/core/rxjs-interop";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
@@ -10,10 +9,9 @@ import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
-import { take } from "rxjs";
 
 import { ClientStatus } from "../shared/interfaces/client.interface";
-import { ClientService } from "../shared/service/client.service";
+import { ClientStore } from "../shared/store/client.store";
 
 @Component({
   selector: "app-clients-list",
@@ -34,22 +32,31 @@ import { ClientService } from "../shared/service/client.service";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientsListComponent {
-  private readonly clientService = inject(ClientService);
-
-  private readonly clientListResource = rxResource({
-    stream: () => this.clientService.getClients(),
-    defaultValue: [],
-  });
+  private readonly clientStore = inject(ClientStore);
 
   protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
     { label: "Aktivní", value: ClientStatus.ACTIVE },
     { label: "Neaktivní", value: ClientStatus.INACTIVE },
   ];
 
-  protected readonly clients = computed(() => this.clientListResource.value());
+  protected readonly clients = computed(() => this.clientStore.clients());
   protected readonly ClientStatus = ClientStatus;
 
   protected readonly statusFilter = signal<ClientStatus | null>(null);
+
+  constructor() {
+    effect(() => {
+      const clients = this.clientStore.clients();
+
+      if (clients.length === 0) {
+        this.clientStore.loadAll();
+      }
+    });
+  }
+
+  protected reloadClients(): void {
+    this.clientStore.loadAll();
+  }
 
   /**
    * @todo this is client-side filtering; we should use server-side filtering
@@ -74,6 +81,6 @@ export class ClientsListComponent {
   }
 
   protected deleteClient(_id: string): void {
-    this.clientService.deleteClient(_id).pipe(take(1)).subscribe();
+    this.clientStore.deleteClient(_id);
   }
 }

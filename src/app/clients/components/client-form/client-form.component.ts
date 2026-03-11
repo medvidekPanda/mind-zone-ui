@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output } from "@angular/core";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
@@ -10,6 +10,7 @@ import { SelectModule } from "primeng/select";
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { Client, ClientGender, ClientPayload, ClientStatus } from "../../../shared/interfaces/client.interface";
+import { ClientStore } from "../../../shared/store/client.store";
 
 type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" | "status"> & {
   gender: ClientGender | null;
@@ -33,6 +34,8 @@ type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientFormComponent {
+  private readonly clientStore = inject(ClientStore);
+
   readonly clientModel = model<ClientFormModel>({
     firstName: "",
     lastName: "",
@@ -43,7 +46,7 @@ export class ClientFormComponent {
     status: null,
   });
 
-  readonly clientDetail = input<Client | undefined>(undefined);
+  readonly clientDetail = computed(() => this.clientStore.client());
   readonly readonly = input<boolean>(false);
 
   protected readonly genderOptions: { label: string; value: ClientGender }[] = [

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from "@angular/core";
 import { rxResource, toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";
 
@@ -8,7 +8,7 @@ import { TagModule } from "primeng/tag";
 import { of, take } from "rxjs";
 
 import { Client, ClientPayload } from "../../../shared/interfaces/client.interface";
-import { ClientService } from "../../../shared/service/client.service";
+import { ClientStore } from "../../../shared/store/client.store";
 import { ClientCreateComponent } from "../client-create/client-create.component";
 import { ClientEditComponent } from "../client-edit/client-edit.component";
 
@@ -21,7 +21,7 @@ import { ClientEditComponent } from "../client-edit/client-edit.component";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientDetailComponent {
-  private readonly clientService = inject(ClientService);
+  private readonly clientStore = inject(ClientStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -29,24 +29,24 @@ export class ClientDetailComponent {
   private readonly paramMap = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
   });
-  private readonly refreshTrigger = signal(0);
 
   protected readonly id = computed(() => this.paramMap()?.get("id") ?? undefined);
 
-  private readonly clientResource = rxResource({
-    params: () => ({ id: this.id(), refresh: this.refreshTrigger() }),
-    stream: ({ params }) => {
-      const { id } = params;
-      if (!id) return of({} as Client);
-
-      return this.clientService.getClient(id);
-    },
-    defaultValue: {} as Client,
-  });
-
-  protected readonly client = computed(() => this.clientResource.value());
+  protected readonly client = computed(() => this.clientStore.client());
   protected readonly editing = signal(false);
   protected readonly isNewClient = computed(() => !this.id());
+
+  constructor() {
+    const id = this.id();
+    if (id) {
+      this.clientStore.loadClient(id);
+    }
+
+    effect(() => {
+      const isLoading = this.clientStore.isLoading();
+      console.log("isLoading", isLoading);
+    });
+  }
 
   protected startEdit(): void {
     this.editing.set(true);
@@ -65,26 +65,15 @@ export class ClientDetailComponent {
   }
 
   protected onSave(): void {
-    const { id } = this.client();
+    const id = this.client()?.id;
     if (!this.clientPayload) return;
 
     if (id) {
-      this.clientService
-        .updateClient(id, this.clientPayload)
-        .pipe(take(1))
-        .subscribe(() => {
-          this.refreshTrigger.update((v) => v + 1);
-          this.editing.set(false);
-        });
+      this.clientStore.updateClient({ id, payload: this.clientPayload });
       return;
     }
 
-    this.clientService
-      .createClient(this.clientPayload)
-      .pipe(take(1))
-      .subscribe(() => {
-        this.router.navigate(["/clients"]);
-      });
+    this.clientStore.createClient(this.clientPayload);
   }
 
   protected onFormChanged(form: ClientPayload): void {

@@ -8,6 +8,7 @@
         <h3 class="m-0 text-base font-bold text-surface-800">Zápis ze sezení</h3>
         <span class="ml-auto text-xs text-surface-400 italic">Důvěrné</span>
       </div>
+
       <div class="p-5 space-y-4">
         <div class="flex flex-col gap-1">
           <label
@@ -81,7 +82,7 @@
         <app-form-select
           id="clientId"
           [formField]="sessionForm.clientId"
-          [options]="clientOptions"
+          [options]="clientOptions()"
           placeholder="Vyberte klienta"
           [showClear]="true"
         />

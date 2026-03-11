@@ -1,5 +1,8 @@
 <app-page-header [title]="pageTitle()">
-  <div actions class="flex gap-2">
+  <div
+    actions
+    class="flex gap-2"
+  >
     <a
       routerLink="/sessions"
       pButton
@@ -18,9 +21,21 @@
           severity="secondary"
           (click)="cancelEdit()"
         ></button>
-        <button type="button" pButton label="Uložit" icon="pi pi-check" (click)="onSave()"></button>
+        <button
+          type="button"
+          pButton
+          label="Uložit"
+          icon="pi pi-check"
+          (click)="onSave()"
+        ></button>
       } @else {
-        <button type="button" pButton label="Upravit sezení" icon="pi pi-pencil" (click)="startEdit()"></button>
+        <button
+          type="button"
+          pButton
+          label="Upravit sezení"
+          icon="pi pi-pencil"
+          (click)="startEdit()"
+        ></button>
       }
     }
   </div>
@@ -28,13 +43,29 @@
 
 @if (isNewSession()) {
   <app-session-form
+    [clientId]="clientIdFromUrl()"
     [sessionDetail]="session()"
     (formChanged)="onFormChanged($event)"
   />
 
   <div class="flex gap-2 mt-6">
-    <button type="button" pButton label="Uložit záznam" icon="pi pi-check" (click)="onSave()"></button>
-    <button type="button" pButton label="Zrušit" icon="pi pi-times" severity="secondary" [text]="true" (click)="cancel()"></button>
+    <button
+      type="button"
+      pButton
+      label="Uložit záznam"
+      icon="pi pi-check"
+      (click)="onSave()"
+    ></button>
+
+    <button
+      type="button"
+      pButton
+      label="Zrušit"
+      icon="pi pi-times"
+      severity="secondary"
+      [text]="true"
+      (click)="cancel()"
+    ></button>
   </div>
 } @else {
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

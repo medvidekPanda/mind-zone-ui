@@ -3,12 +3,21 @@
     <h1 class="text-2xl font-bold text-slate-900 m-0">Klienti</h1>
     <p class="text-sm text-slate-500 m-0 mt-1">Správa klientských profilů</p>
   </div>
-  <a
-    routerLink="/clients/new"
-    pButton
-    label="Nový klient"
-    icon="pi pi-plus"
-  ></a>
+
+  <div class="flex gap-2">
+    <p-button
+      label="Reload"
+      icon="pi pi-refresh"
+      (onClick)="reloadClients()"
+    ></p-button>
+
+    <a
+      routerLink="/clients/new"
+      pButton
+      label="Nový klient"
+      icon="pi pi-plus"
+    ></a>
+  </div>
 </div>
 
 <!-- Table card -->

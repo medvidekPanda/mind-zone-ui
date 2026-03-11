@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, model, output } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
@@ -7,6 +7,7 @@ import { CardModule } from "primeng/card";
 import { SessionScheduleDialogComponent } from "../../../sessions/components/session-schedule-dialog/session-schedule-dialog.component";
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
 import { Client, ClientPayload } from "../../../shared/interfaces/client.interface";
+import { ClientStore } from "../../../shared/store/client.store";
 import { ClientFormComponent } from "../client-form/client-form.component";
 import { ClientProfileCardComponent } from "../client-profile-card/client-profile-card.component";
 import { ClientStatsComponent } from "../client-stats/client-stats.component";
@@ -29,8 +30,11 @@ import { ClientStatsComponent } from "../client-stats/client-stats.component";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientEditComponent {
-  readonly client = input.required<Client>();
+  private readonly clientStore = inject(ClientStore);
+
   readonly editing = input.required<boolean>();
+
+  readonly client = computed(() => this.clientStore.client());
 
   readonly save = output<void>();
   readonly cancelEdit = output<void>();
