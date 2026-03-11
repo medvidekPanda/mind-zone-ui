@@ -12,11 +12,13 @@ export const routes: Routes = [
   },
   {
     path: "users/new",
+    data: { isNew: true },
     loadComponent: () =>
       import("./users/components/user-detail/user-detail.component").then((m) => m.UserDetailComponent),
   },
   {
     path: "users/:id",
+    data: { isNew: false },
     loadComponent: () =>
       import("./users/components/user-detail/user-detail.component").then((m) => m.UserDetailComponent),
   },

@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, effect, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
+import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { InputTextModule } from "primeng/inputtext";
 import { SelectModule } from "primeng/select";
 
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { User, UserPayload, UserRole } from "../../../shared/interfaces/user.interface";
+import { UserStore } from "../../../shared/store/user.store";
 
 type UserFormModel = Omit<User, "id" | "createdAt" | "updatedAt" | "role" | "firebaseId"> & {
   role: UserRole | null;
@@ -15,13 +17,15 @@ type UserFormModel = Omit<User, "id" | "createdAt" | "updatedAt" | "role" | "fir
 
 @Component({
   selector: "app-user-form",
-  imports: [CardModule, FormField, FormSelectComponent, InputTextModule, SelectModule],
+  imports: [ButtonModule, CardModule, FormField, FormSelectComponent, InputTextModule, SelectModule],
   templateUrl: "./user-form.component.html",
   host: { class: "flex flex-col" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserFormComponent {
-  readonly userModel = model<UserFormModel>({
+  private readonly userStore = inject(UserStore);
+
+  private readonly userModel = signal<UserFormModel>({
     firstName: "",
     lastName: "",
     email: "",
@@ -29,8 +33,12 @@ export class UserFormComponent {
     firebaseId: "",
   });
 
-  readonly userDetail = input<User | undefined>(undefined);
+  readonly userDetail = computed(() => this.userStore.user());
   readonly readonly = input<boolean>(false);
+  readonly showActions = input<boolean>(false);
+
+  readonly saved = output<void>();
+  readonly cancelled = output<void>();
 
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
     { label: "Terapeut", value: UserRole.THERAPIST },
@@ -50,14 +58,7 @@ export class UserFormComponent {
     readonly(schemaPath.email, this.readonly);
   });
 
-  readonly formChanged = output<UserPayload>();
-
   constructor() {
-    this.initUserFormEffect();
-    this.initUserModelEffect();
-  }
-
-  private initUserFormEffect(): void {
     effect(() => {
       const user = this.userDetail();
 
@@ -74,19 +75,30 @@ export class UserFormComponent {
     });
   }
 
-  private initUserModelEffect(): void {
-    effect(() => {
-      const value = this.userForm().value();
-      const isValid = this.userForm().valid();
-      const dirty = this.userForm().dirty();
+  protected save(): void {
+    const f = this.userForm();
+    if (!f.valid()) return;
 
-      if (value.role !== null && isValid && dirty) {
-        this.formChanged.emit({
-          ...value,
-          role: value.role,
-          firebaseId: value.firebaseId || null,
-        });
-      }
-    });
+    const value = f.value() as UserFormModel;
+    if (value.role === null) return;
+
+    const payload: UserPayload = {
+      ...value,
+      role: value.role,
+      firebaseId: value.firebaseId || null,
+    };
+
+    const user = this.userDetail();
+    if (user?.id) {
+      this.userStore.updateUser({ id: user.id, payload });
+    } else {
+      this.userStore.createUser(payload);
+    }
+
+    this.saved.emit();
+  }
+
+  protected cancel(): void {
+    this.cancelled.emit();
   }
 }

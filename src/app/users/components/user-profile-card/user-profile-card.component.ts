@@ -14,6 +14,6 @@ import { User, UserRole } from "../../../shared/interfaces/user.interface";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileCardComponent {
-  readonly user = input.required<User>();
+  readonly user = input<User | null>(null);
   readonly UserRole = UserRole;
 }

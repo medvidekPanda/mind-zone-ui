@@ -53,4 +53,26 @@
       placeholder="Propojení s Firebase účtem"
     />
   </div>
+
+  @if (showActions()) {
+    <div class="flex gap-2 pt-2">
+      <button
+        (click)="save()"
+        type="button"
+        pButton
+        label="Uložit"
+        icon="pi pi-check"
+      ></button>
+
+      <button
+        (click)="cancel()"
+        type="button"
+        pButton
+        label="Zrušit"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+      ></button>
+    </div>
+  }
 </form>
