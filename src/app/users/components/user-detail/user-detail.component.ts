@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { MenuItem } from "primeng/api";
+import { MenuModule } from "primeng/menu";
 
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
 import { UserStore } from "../../../shared/store/user.store";
@@ -17,6 +19,7 @@ import { UserStatsComponent } from "../user-stats/user-stats.component";
   imports: [
     ButtonModule,
     CardModule,
+    MenuModule,
     PageHeaderComponent,
     RouterLink,
     UserFormComponent,
@@ -24,7 +27,7 @@ import { UserStatsComponent } from "../user-stats/user-stats.component";
     UserStatsComponent,
   ],
   templateUrl: "./user-detail.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "flex flex-col overflow-hidden h-full" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserDetailComponent {
@@ -41,6 +44,14 @@ export class UserDetailComponent {
   protected readonly isNewUser: boolean = this.route.snapshot.data["isNew"];
   protected readonly user = computed(() => this.userStore.user());
   protected readonly editing = signal(this.isNewUser);
+
+  protected readonly actionMenuItems: MenuItem[] = [
+    { label: "Smazat uživatele", icon: "pi pi-trash", command: () => this.onDelete() },
+  ];
+
+  protected onDelete(): void {
+    // TODO: implement after API integration
+  }
 
   constructor() {
     if (this.isNewUser) {

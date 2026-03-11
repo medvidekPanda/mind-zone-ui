@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { MenuModule } from "primeng/menu";
+import { MenuItem } from "primeng/api";
 
 import { SessionScheduleDialogComponent } from "../../../sessions/components/session-schedule-dialog/session-schedule-dialog.component";
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
@@ -18,6 +20,7 @@ import { ClientStatsComponent } from "../client-stats/client-stats.component";
   imports: [
     ButtonModule,
     CardModule,
+    MenuModule,
     ClientFormComponent,
     ClientProfileCardComponent,
     ClientStatsComponent,
@@ -26,7 +29,7 @@ import { ClientStatsComponent } from "../client-stats/client-stats.component";
     SessionScheduleDialogComponent,
   ],
   templateUrl: "./client-detail.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "flex flex-col overflow-hidden h-full" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientDetailComponent {
@@ -44,6 +47,17 @@ export class ClientDetailComponent {
   protected readonly client = computed(() => this.clientStore.client());
   protected readonly editing = signal(this.isNewClient);
   protected readonly scheduleDialogVisible = signal(false);
+
+  protected readonly actionMenuItems: MenuItem[] = [
+    { label: "Upravit klienta", icon: "pi pi-user-edit", command: () => this.startEdit() },
+    { label: "Naplánovat sezení", icon: "pi pi-calendar-plus", command: () => this.scheduleDialogVisible.set(true) },
+    { separator: true },
+    { label: "Smazat klienta", icon: "pi pi-trash", command: () => this.onDelete() },
+  ];
+
+  protected onDelete(): void {
+    // TODO: implement after API integration
+  }
 
   constructor() {
     if (this.isNewClient) {

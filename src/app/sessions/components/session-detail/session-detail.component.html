@@ -1,3 +1,10 @@
+<p-menu
+  #actionsMenu
+  [model]="actionMenuItems()"
+  [popup]="true"
+  appendTo="body"
+/>
+
 <app-page-header [title]="pageTitle()">
   <div
     actions
@@ -6,101 +13,39 @@
     <a
       routerLink="/sessions"
       pButton
-      [label]="isNewSession() ? 'Zpět' : 'Zpět na seznam'"
+      label="Zpět"
       icon="pi pi-arrow-left"
       severity="secondary"
       [text]="true"
     ></a>
-    @if (!isNewSession()) {
-      @if (editing()) {
-        <button
-          type="button"
-          pButton
-          label="Zrušit úpravy"
-          icon="pi pi-times"
-          severity="secondary"
-          (click)="cancelEdit()"
-        ></button>
-        <button
-          type="button"
-          pButton
-          label="Uložit"
-          icon="pi pi-check"
-          (click)="onSave()"
-        ></button>
-      } @else {
-        <button
-          type="button"
-          pButton
-          label="Upravit sezení"
-          icon="pi pi-pencil"
-          (click)="startEdit()"
-        ></button>
-      }
+    @if (!editing() && !isNewSession) {
+      <button
+        type="button"
+        pButton
+        icon="pi pi-ellipsis-v"
+        severity="secondary"
+        [text]="true"
+        (click)="actionsMenu.toggle($event)"
+      ></button>
+      <button
+        type="button"
+        pButton
+        label="Upravit"
+        icon="pi pi-pencil"
+        (click)="startEdit()"
+      ></button>
     }
   </div>
 </app-page-header>
 
-@if (isNewSession()) {
+<div class="overflow-y-auto flex-1 py-6 space-y-6">
   <app-session-form
     [clientId]="clientIdFromUrl()"
-    [sessionDetail]="session()"
-    (formChanged)="onFormChanged($event)"
+    [readonly]="!editing()"
+    [showActions]="editing()"
+    [paid]="paid()"
+    (paidChange)="paid.set($event)"
+    (saved)="onSaved()"
+    (cancelled)="onCancelled()"
   />
-
-  <div class="flex gap-2 mt-6">
-    <button
-      type="button"
-      pButton
-      label="Uložit záznam"
-      icon="pi pi-check"
-      (click)="onSave()"
-    ></button>
-
-    <button
-      type="button"
-      pButton
-      label="Zrušit"
-      icon="pi pi-times"
-      severity="secondary"
-      [text]="true"
-      (click)="cancel()"
-    ></button>
-  </div>
-} @else {
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
-      <p-card
-        [header]="cardHeader()"
-        class="rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
-      >
-        <app-session-form
-          [sessionDetail]="session()"
-          [readonly]="!editing()"
-          [paid]="paid()"
-          (paidChange)="paid.set($event)"
-          (formChanged)="onFormChanged($event)"
-        />
-      </p-card>
-
-      <app-session-attachments />
-    </div>
-
-    <div class="space-y-6">
-      <app-session-payment-card
-        [price]="session().price"
-        [paid]="paid()"
-        (paidChange)="paid.set($event)"
-        [editable]="editing()"
-      />
-
-      @if (!editing()) {
-        <app-session-quick-actions
-          (generateInvoice)="onGenerateInvoice()"
-          (sendSummary)="onSendSummary()"
-          (delete)="onDelete()"
-        />
-      }
-    </div>
-  </div>
-}
+</div>

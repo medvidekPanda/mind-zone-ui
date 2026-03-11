@@ -1,17 +1,22 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
+import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { DatePickerModule } from "primeng/datepicker";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { MultiSelectModule } from "primeng/multiselect";
+import { PanelModule } from "primeng/panel";
+import { TagModule } from "primeng/tag";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { Session, SessionFormat, SessionPayload, SessionType } from "../../../shared/interfaces/session.interface";
 import { ClientStore } from "../../../shared/store/client.store";
+import { SessionStore } from "../../../shared/store/session.store";
+import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
 
 type SessionFormModel = {
   date: string | null;
@@ -26,6 +31,7 @@ type SessionFormModel = {
 @Component({
   selector: "app-session-form",
   imports: [
+    ButtonModule,
     FormsModule,
     FormField,
     FormDatepickerComponent,
@@ -35,6 +41,9 @@ type SessionFormModel = {
     DatePickerModule,
     CheckboxModule,
     MultiSelectModule,
+    PanelModule,
+    TagModule,
+    SessionAttachmentsComponent,
   ],
   templateUrl: "./session-form.component.html",
   host: { class: "flex flex-col" },
@@ -42,10 +51,9 @@ type SessionFormModel = {
 })
 export class SessionFormComponent {
   private readonly clientStore = inject(ClientStore);
+  private readonly sessionStore = inject(SessionStore);
 
-  protected readonly clients = computed(() => this.clientStore.clients());
-
-  readonly sessionModel = model<SessionFormModel>({
+  private readonly sessionModel = signal<SessionFormModel>({
     date: null,
     format: null,
     type: null,
@@ -55,9 +63,12 @@ export class SessionFormComponent {
     therapistId: null,
   });
 
+  protected readonly sessionDetail = computed(() => this.sessionStore.session());
+  protected readonly clients = computed(() => this.clientStore.clients());
+
   readonly clientId = input<string | null>(null);
-  readonly sessionDetail = input<Session | undefined>(undefined);
   readonly readonly = input<boolean>(false);
+  readonly showActions = input<boolean>(false);
 
   readonly startTime = model<Date | null>(SessionFormComponent.roundToNext5Min(new Date()));
   readonly endTime = model<Date | null>(null);
@@ -65,9 +76,18 @@ export class SessionFormComponent {
   readonly price = model<number | null>(null);
   readonly paid = model<boolean>(false);
 
-  protected clientOptions = computed(() => {
-    const clients = this.clientStore.clients();
-    return clients.map((client) => ({ label: `${client.firstName} ${client.lastName}`, value: client.id }));
+  readonly saved = output<void>();
+  readonly cancelled = output<void>();
+
+  protected clientOptions = computed(() =>
+    this.clientStore.clients().map((client) => ({ label: `${client.firstName} ${client.lastName}`, value: client.id })),
+  );
+
+  protected readonly metaSummary = computed(() => {
+    const { clientId, date } = this.sessionModel();
+    const clientLabel = this.clientOptions().find((o) => o.value === clientId)?.label;
+    const parts = [clientLabel, date].filter(Boolean);
+    return parts.length ? parts.join(" · ") : "Základní údaje";
   });
 
   protected readonly duration = computed(() => {
@@ -99,7 +119,7 @@ export class SessionFormComponent {
     { label: "Rodina", value: "rodina" },
   ];
 
-  // // Placeholder – to be loaded from API
+  // Placeholder – to be loaded from API
   protected readonly therapistOptions = [{ label: "Anna Nováková", value: "1" }];
 
   protected readonly sessionForm = form(this.sessionModel, (schemaPath) => {
@@ -116,8 +136,6 @@ export class SessionFormComponent {
     readonly(schemaPath.therapistId, this.readonly);
   });
 
-  readonly formChanged = output<SessionPayload>();
-
   private static roundToNext5Min(date: Date): Date {
     const d = new Date(date);
     const min = d.getMinutes();
@@ -131,89 +149,84 @@ export class SessionFormComponent {
   }
 
   constructor() {
-    this.initDetailEffect();
-    this.initOutputEffect();
-    this.initClientOptionsEffect();
-  }
-
-  private initClientOptionsEffect(): void {
     effect(() => {
       const clients = this.clientStore.clients();
-
       if (clients.length === 0) {
         this.clientStore.loadAll();
       }
     });
-  }
 
-  private initDetailEffect(): void {
     effect(() => {
       const session = this.sessionDetail();
       const clientId = this.clientId();
 
       if (clientId) {
-        this.sessionModel.update((model) => ({ ...model, clientId }));
+        this.sessionModel.update((m) => ({ ...m, clientId }));
       }
 
-      if (!session) return;
+      if (!session?.id) return;
 
-      if (session.id) {
-        const { date, format, type, notes, nextPlan, clientId, therapistId, time, duration, tags, price, paid } =
-          session;
+      const { date, format, type, notes, nextPlan, clientId: sClientId, therapistId, time, duration, tags, price, paid } = session;
+      this.sessionModel.set({ date, format, type, notes, nextPlan, clientId: sClientId, therapistId });
 
-        this.sessionModel.set({ date, format, type, notes, nextPlan, clientId, therapistId });
+      if (time) {
+        const [hours, minutes] = time.split(":").map(Number);
+        const start = new Date();
+        start.setHours(hours, minutes, 0, 0);
+        this.startTime.set(start);
 
-        if (time) {
-          const [hours, minutes] = time.split(":").map(Number);
-          const start = new Date();
-          start.setHours(hours, minutes, 0, 0);
-          this.startTime.set(start);
-
-          if (duration) {
-            const end = new Date(start.getTime() + duration * 60000);
-            this.endTime.set(end);
-          }
+        if (duration) {
+          this.endTime.set(new Date(start.getTime() + duration * 60000));
         }
-
-        this.tags.set(tags ?? []);
-        this.price.set(price ?? null);
-        this.paid.set(paid ?? false);
-      } else if (session.clientId) {
-        this.sessionModel.update((m) => ({ ...m, clientId: session.clientId }));
       }
+
+      this.tags.set(tags ?? []);
+      this.price.set(price ?? null);
+      this.paid.set(paid ?? false);
     });
   }
 
-  private initOutputEffect(): void {
-    effect(() => {
-      const value = this.sessionForm().value();
-      const isValid = this.sessionForm().valid();
-      const startTime = this.startTime();
-      const duration = this.duration();
-      const tags = this.tags();
-      const price = this.price();
-      const paid = this.paid();
+  protected save(): void {
+    const f = this.sessionForm();
+    if (!f.valid()) return;
 
-      if (value.format !== null && value.type !== null && value.date !== null && duration !== null && isValid) {
-        const timeStr = startTime
-          ? `${String(startTime.getHours()).padStart(2, "0")}:${String(startTime.getMinutes()).padStart(2, "0")}`
-          : "";
+    const value = f.value() as SessionFormModel;
+    if (!value.format || !value.type || !value.date) return;
 
-        this.formChanged.emit({
-          date: value.date,
-          time: timeStr,
-          format: value.format,
-          type: value.type,
-          duration,
-          notes: value.notes,
-          nextPlan: value.nextPlan,
-          clientId: value.clientId ?? "",
-          therapistId: value.therapistId ?? "",
-          tags,
-          price: price ?? 0,
-          paid,
-        });
-      }
-    });
+    const duration = this.duration();
+    if (!duration) return;
+
+    const startTime = this.startTime();
+    const timeStr = startTime
+      ? `${String(startTime.getHours()).padStart(2, "0")}:${String(startTime.getMinutes()).padStart(2, "0")}`
+      : "";
+
+    const payload: SessionPayload = {
+      date: value.date,
+      time: timeStr,
+      format: value.format,
+      type: value.type,
+      duration,
+      notes: value.notes,
+      nextPlan: value.nextPlan,
+      clientId: value.clientId ?? "",
+      therapistId: value.therapistId ?? "",
+      tags: this.tags(),
+      price: this.price() ?? 0,
+      paid: this.paid(),
+    };
+
+    const session = this.sessionDetail();
+    if (session?.id) {
+      this.sessionStore.updateSession({ id: session.id, payload });
+    } else {
+      this.sessionStore.createSession(payload);
+    }
+
+    this.saved.emit();
+  }
+
+  protected cancel(): void {
+    this.cancelled.emit();
   }
 }

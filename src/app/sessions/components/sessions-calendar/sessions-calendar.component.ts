@@ -12,7 +12,7 @@ import { PageHeaderComponent } from "../../../shared/components/page-header/page
   standalone: true,
   imports: [PageHeaderComponent, RouterLink, ButtonModule, CardModule, SessionScheduleDialogComponent],
   templateUrl: "./sessions-calendar.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "flex flex-col overflow-hidden h-full" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionsCalendarComponent {
