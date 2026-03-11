@@ -31,11 +31,13 @@ export const routes: Routes = [
   },
   {
     path: "clients/new",
+    data: { isNew: true },
     loadComponent: () =>
       import("./clients/components/client-detail/client-detail.component").then((m) => m.ClientDetailComponent),
   },
   {
     path: "clients/:id",
+    data: { isNew: false },
     loadComponent: () =>
       import("./clients/components/client-detail/client-detail.component").then((m) => m.ClientDetailComponent),
   },

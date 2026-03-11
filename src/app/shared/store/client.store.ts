@@ -128,6 +128,8 @@ export const ClientStore = signalStore(
       ),
     ),
 
+    resetClient: () => patchState(store, { client: null }),
+
     updateFilter: (filter: Partial<ClientState["filter"]>) =>
       patchState(store, (state) => ({
         filter: { ...state.filter, ...filter },

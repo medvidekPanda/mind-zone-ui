@@ -14,6 +14,6 @@ import { Client, ClientStatus } from "../../../shared/interfaces/client.interfac
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientProfileCardComponent {
-  readonly client = input.required<Client>();
+  readonly client = input<Client | null>(null);
   readonly ClientStatus = ClientStatus;
 }

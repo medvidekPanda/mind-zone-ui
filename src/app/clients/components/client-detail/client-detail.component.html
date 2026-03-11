@@ -1,17 +1,71 @@
-@let _newClient = isNewClient();
+@let _client = client();
 
-@if (_newClient) {
-  <app-client-create
-    (formChanged)="onFormChanged($event)"
-    (save)="onSave()"
-    (cancel)="cancel()"
-  />
-} @else {
-  <app-client-edit
-    [editing]="editing()"
-    (formChanged)="onFormChanged($event)"
-    (save)="onSave()"
-    (cancelEdit)="cancelEdit()"
-    (startEdit)="startEdit()"
+<app-page-header
+  [title]="isNewClient ? 'Nový klient' : editing() ? 'Úprava klienta' : 'Detail klienta: ' + _client?.firstName + ' ' + _client?.lastName"
+>
+  <div actions class="flex gap-2">
+    <a
+      routerLink="/clients"
+      pButton
+      label="Zpět na seznam"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      [text]="true"
+    ></a>
+    @if (!editing() && !isNewClient) {
+      <button
+        type="button"
+        pButton
+        label="Naplánovat sezení"
+        icon="pi pi-calendar-plus"
+        severity="secondary"
+        [outlined]="true"
+        (click)="scheduleDialogVisible.set(true)"
+      ></button>
+      <a
+        [routerLink]="['/sessions/new']"
+        [queryParams]="{ clientId: _client?.id }"
+        pButton
+        label="Nové sezení"
+        icon="pi pi-plus"
+        severity="success"
+      ></a>
+      <button
+        (click)="startEdit()"
+        type="button"
+        pButton
+        label="Upravit klienta"
+        icon="pi pi-user-edit"
+      ></button>
+    }
+  </div>
+</app-page-header>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-1">
+    <app-client-profile-card [client]="_client" />
+    <app-client-stats class="mt-6" />
+  </div>
+
+  <div class="lg:col-span-2">
+    <p-card
+      header="Údaje klienta"
+      class="rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full"
+    >
+      <app-client-form
+        [readonly]="!editing()"
+        [showActions]="editing()"
+        (saved)="onSaved()"
+        (cancelled)="onCancelled()"
+      />
+    </p-card>
+  </div>
+</div>
+
+@if (_client) {
+  <app-session-schedule-dialog
+    [visible]="scheduleDialogVisible()"
+    (visibleChange)="scheduleDialogVisible.set($event)"
+    [clientId]="_client.id"
   />
 }

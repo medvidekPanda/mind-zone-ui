@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
@@ -36,7 +36,7 @@ type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" 
 export class ClientFormComponent {
   private readonly clientStore = inject(ClientStore);
 
-  readonly clientModel = model<ClientFormModel>({
+  private readonly clientModel = signal<ClientFormModel>({
     firstName: "",
     lastName: "",
     gender: null,
@@ -48,6 +48,10 @@ export class ClientFormComponent {
 
   readonly clientDetail = computed(() => this.clientStore.client());
   readonly readonly = input<boolean>(false);
+  readonly showActions = input<boolean>(false);
+
+  readonly saved = output<void>();
+  readonly cancelled = output<void>();
 
   protected readonly genderOptions: { label: string; value: ClientGender }[] = [
     { label: "Muž", value: ClientGender.MALE },
@@ -73,14 +77,7 @@ export class ClientFormComponent {
     readonly(schemaPath.lastName, this.readonly);
   });
 
-  readonly formChanged = output<ClientPayload>();
-
   constructor() {
-    this.initClientFormEffect();
-    this.initClientModelEffect();
-  }
-
-  private initClientFormEffect(): void {
     effect(() => {
       const client = this.clientDetail();
 
@@ -99,23 +96,34 @@ export class ClientFormComponent {
     });
   }
 
-  private initClientModelEffect() {
-    effect(() => {
-      const value = this.clientForm().value();
-      const isValid = this.clientForm().valid();
-      const dirty = this.clientForm().dirty();
+  protected save(): void {
+    const f = this.clientForm();
+    if (!f.valid()) return;
 
-      if (value.gender !== null && value.status !== null && isValid && dirty) {
-        this.formChanged.emit({
-          ...value,
-          /**
-           * @todo user id should be obtained from auth service or with option to change as admin
-           */
-          userId: "019c9b5c-0b2c-74ae-bf97-036f30651efe",
-          gender: value.gender,
-          status: value.status,
-        });
-      }
-    });
+    const value = f.value() as ClientFormModel;
+    if (value.gender === null || value.status === null) return;
+
+    const payload: ClientPayload = {
+      ...value,
+      /**
+       * @todo user id should be obtained from auth service or with option to change as admin
+       */
+      userId: "019c9b5c-0b2c-74ae-bf97-036f30651efe",
+      gender: value.gender,
+      status: value.status,
+    };
+
+    const client = this.clientDetail();
+    if (client?.id) {
+      this.clientStore.updateClient({ id: client.id, payload });
+    } else {
+      this.clientStore.createClient(payload);
+    }
+
+    this.saved.emit();
+  }
+
+  protected cancel(): void {
+    this.cancelled.emit();
   }
 }
