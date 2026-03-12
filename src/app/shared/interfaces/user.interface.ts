@@ -1,6 +1,6 @@
 export enum UserRole {
-  THERAPIST = "THERAPIST",
   ADMIN = "ADMIN",
+  USER = "USER",
 }
 
 export interface User {
@@ -14,4 +14,6 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserPayload extends Omit<User, "createdAt" | "id" | "updatedAt"> {}
+export interface UserPayload extends Omit<User, "createdAt" | "id" | "updatedAt" | "role"> {
+  role?: UserRole;
+}

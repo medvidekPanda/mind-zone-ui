@@ -5,6 +5,7 @@ import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { catchError, of, pipe, switchMap, tap } from "rxjs";
 
 import { User, UserPayload } from "../interfaces/user.interface";
+import { AuthStore } from "./auth.store";
 import { UserService } from "../service/user.service";
 
 type UserState = {
@@ -23,7 +24,7 @@ export const UserStore = signalStore(
   { providedIn: "root" },
   withState(initialState),
 
-  withMethods((store, userService = inject(UserService)) => ({
+  withMethods((store, userService = inject(UserService), authStore = inject(AuthStore)) => ({
     loadUser: rxMethod<string>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
@@ -54,12 +55,17 @@ export const UserStore = signalStore(
       ),
     ),
 
-    updateUser: rxMethod<{ id: string; payload: UserPayload }>(
+    updateUser: rxMethod<{ id: string; payload: Partial<UserPayload> }>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(({ id, payload }) =>
           userService.updateUser(id, payload).pipe(
-            tap((user) => patchState(store, { user, isLoading: false, error: null })),
+            tap((user) => {
+              patchState(store, { user, isLoading: false, error: null });
+              if (authStore.currentUser()?.id === user.id) {
+                authStore.syncCurrentUser(user);
+              }
+            }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
               return of(null);

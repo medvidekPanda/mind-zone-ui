@@ -1,0 +1,40 @@
+<div class="flex items-center justify-center h-screen">
+  <p-card
+    header="Přihlášení"
+    class="w-full max-w-md"
+  >
+    <form
+      (ngSubmit)="onSubmit()"
+      class="flex flex-col gap-4"
+    >
+      <input
+        pInputText
+        type="email"
+        [(ngModel)]="email"
+        name="email"
+        placeholder="E-mail"
+        class="w-full"
+        required
+      />
+      <p-password
+        [(ngModel)]="password"
+        name="password"
+        placeholder="Heslo"
+        [feedback]="false"
+        [toggleMask]="true"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        required
+      />
+      @if (error()) {
+        <p class="text-red-500 text-sm">{{ error() }}</p>
+      }
+      <p-button
+        type="submit"
+        label="Přihlásit se"
+        [loading]="isLoading()"
+        styleClass="w-full"
+      />
+    </form>
+  </p-card>
+</div>

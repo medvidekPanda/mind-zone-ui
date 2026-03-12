@@ -9,7 +9,7 @@
       />
       <h2 class="m-0 text-xl font-bold text-slate-900">{{ user()!.firstName }} {{ user()!.lastName }}</h2>
       <p-tag
-        [value]="user()!.role === UserRole.THERAPIST ? 'Terapeut' : 'Administrátor'"
+        [value]="user()!.role === UserRole.USER ? 'Uživatel' : 'Administrátor'"
         [severity]="user()!.role === UserRole.ADMIN ? 'warn' : 'info'"
         [rounded]="true"
         class="mt-2"

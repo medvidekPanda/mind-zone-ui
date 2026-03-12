@@ -109,7 +109,7 @@
 
         <td class="px-6 py-4 text-center">
           <p-tag
-            [value]="user.role === UserRole.THERAPIST ? 'Terapeut' : 'Administrátor'"
+            [value]="user.role === UserRole.USER ? 'Uživatel' : 'Administrátor'"
             [severity]="user.role === UserRole.ADMIN ? 'warn' : 'info'"
             [rounded]="true"
           />

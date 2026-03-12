@@ -44,7 +44,7 @@ export class UsersListComponent {
   });
 
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
-    { label: "Terapeut", value: UserRole.THERAPIST },
+    { label: "Uživatel", value: UserRole.USER },
     { label: "Administrátor", value: UserRole.ADMIN },
   ];
 

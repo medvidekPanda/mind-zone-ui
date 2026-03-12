@@ -41,7 +41,7 @@ export class UserFormComponent {
   readonly cancelled = output<void>();
 
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
-    { label: "Terapeut", value: UserRole.THERAPIST },
+    { label: "Uživatel", value: UserRole.USER },
     { label: "Administrátor", value: UserRole.ADMIN },
   ];
 
@@ -82,17 +82,20 @@ export class UserFormComponent {
     const value = f.value() as UserFormModel;
     if (value.role === null) return;
 
-    const payload: UserPayload = {
-      ...value,
-      role: value.role,
-      firebaseId: value.firebaseId || null,
-    };
-
     const user = this.userDetail();
+    const full: UserPayload = { ...value, role: value.role, firebaseId: value.firebaseId || null };
+
     if (user?.id) {
-      this.userStore.updateUser({ id: user.id, payload });
+      const changed = (Object.keys(full) as (keyof UserPayload)[]).reduce(
+        (acc, key) => (full[key] !== user[key] ? { ...acc, [key]: full[key] } : acc),
+        {} as Partial<UserPayload>,
+      );
+
+      if (Object.keys(changed).length > 0) {
+        this.userStore.updateUser({ id: user.id, payload: changed });
+      }
     } else {
-      this.userStore.createUser(payload);
+      this.userStore.createUser(full);
     }
 
     this.saved.emit();

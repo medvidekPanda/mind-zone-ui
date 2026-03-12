@@ -37,10 +37,18 @@
             severity="secondary"
           />
           <div class="hidden md:flex items-center gap-2 ml-2 pl-4 border-l border-slate-200">
-            <div class="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold">
-              PT
-            </div>
-            <span class="text-sm font-medium text-slate-700">Petr Terapeut</span>
+            <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
+            <button
+              type="button"
+              class="flex items-center gap-2 cursor-pointer rounded-lg px-2 py-1 hover:bg-slate-100 transition-colors"
+              (click)="userMenu.toggle($event)"
+            >
+              <div class="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold">
+                {{ displayInitials() }}
+              </div>
+              <span class="text-sm font-medium text-slate-700">{{ displayName() }}</span>
+              <i class="pi pi-chevron-down text-xs text-slate-400"></i>
+            </button>
           </div>
         </div>
       </ng-template>
