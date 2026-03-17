@@ -23,8 +23,13 @@ export interface Session {
   paid: boolean;
   clientId: string;
   therapistId: string;
+  clientName?: string;
+  therapistName?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type SessionPayload = Omit<Session, "id" | "createdAt" | "updatedAt">;
+export type SessionPayload = Omit<
+  Session,
+  "id" | "createdAt" | "updatedAt" | "therapistId" | "clientName" | "therapistName"
+>;

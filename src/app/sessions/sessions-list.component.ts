@@ -11,6 +11,7 @@ import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { SessionFormat } from "../shared/interfaces/session.interface";
 import { SessionStore } from "../shared/store/session.store";
 
 interface SessionRow {
@@ -67,7 +68,12 @@ export class SessionsListComponent {
     { label: "Čeká na úhradu", value: false },
   ];
 
-  protected readonly sessions = computed(() => this.sessionStore.sessions());
+  protected readonly sessions = computed(() =>
+    this.sessionStore.sessions().map((session) => ({
+      ...session,
+      form: session.format === SessionFormat.ONLINE ? "online" : "osobně",
+    })),
+  );
 
   constructor() {
     this.sessionStore.loadAll();

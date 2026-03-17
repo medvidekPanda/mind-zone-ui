@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
@@ -25,7 +35,6 @@ type SessionFormModel = {
   notes: string;
   nextPlan: string;
   clientId: string | null;
-  therapistId: string | null;
 };
 
 @Component({
@@ -60,7 +69,6 @@ export class SessionFormComponent {
     notes: "",
     nextPlan: "",
     clientId: null,
-    therapistId: null,
   });
 
   protected readonly sessionDetail = computed(() => this.sessionStore.session());
@@ -119,9 +127,6 @@ export class SessionFormComponent {
     { label: "Rodina", value: "rodina" },
   ];
 
-  // Placeholder – to be loaded from API
-  protected readonly therapistOptions = [{ label: "Anna Nováková", value: "1" }];
-
   protected readonly sessionForm = form(this.sessionModel, (schemaPath) => {
     required(schemaPath.date, { message: "Datum je povinné" });
     required(schemaPath.format, { message: "Forma je povinná" });
@@ -133,7 +138,6 @@ export class SessionFormComponent {
     readonly(schemaPath.notes, this.readonly);
     readonly(schemaPath.nextPlan, this.readonly);
     readonly(schemaPath.clientId, this.readonly);
-    readonly(schemaPath.therapistId, this.readonly);
   });
 
   private static roundToNext5Min(date: Date): Date {
@@ -177,7 +181,6 @@ export class SessionFormComponent {
       notes: value.notes,
       nextPlan: value.nextPlan,
       clientId: value.clientId ?? "",
-      therapistId: value.therapistId ?? "",
       tags: this.tags(),
       price: this.price() ?? 0,
       paid: this.paid(),
@@ -208,8 +211,8 @@ export class SessionFormComponent {
 
       if (!session?.id) return;
 
-      const { date, format, type, notes, nextPlan, clientId: sClientId, therapistId, time, duration, tags, price, paid } = session;
-      this.sessionModel.set({ date, format, type, notes, nextPlan, clientId: sClientId, therapistId });
+      const { date, format, type, notes, nextPlan, clientId: sClientId, time, duration, tags, price, paid } = session;
+      this.sessionModel.set({ date, format, type, notes, nextPlan, clientId: sClientId });
 
       if (time) {
         const [hours, minutes] = time.split(":").map(Number);

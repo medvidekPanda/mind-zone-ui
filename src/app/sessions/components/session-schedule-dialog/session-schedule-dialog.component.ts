@@ -10,7 +10,6 @@ import { SessionFormat, SessionType } from "../../../shared/interfaces/session.i
 
 export interface SchedulePayload {
   clientId: string | null;
-  therapistId: string | null;
   date: Date | null;
   startTime: Date | null;
   endTime: Date | null;
@@ -36,8 +35,6 @@ export class SessionScheduleDialogComponent {
     { label: "Marie Svobodová", value: "c2" },
   ];
 
-  protected readonly therapistOptions = [{ label: "Anna Nováková", value: "1" }];
-
   protected readonly formatOptions: { label: string; value: SessionFormat }[] = [
     { label: "Online", value: SessionFormat.ONLINE },
     { label: "Osobně", value: SessionFormat.IN_PERSON },
@@ -59,7 +56,6 @@ export class SessionScheduleDialogComponent {
 
   protected schedule: SchedulePayload = {
     clientId: null,
-    therapistId: null,
     date: null,
     startTime: SessionScheduleDialogComponent.roundToNext5Min(new Date()),
     endTime: null,
