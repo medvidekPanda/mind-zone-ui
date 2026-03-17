@@ -32,11 +32,7 @@ export class SetupComponent {
   protected readonly error = this.authStore.error;
 
   constructor() {
-    effect(() => {
-      if (this.authStore.currentUser()) {
-        this.router.navigate(["/dashboard"]);
-      }
-    });
+    this.redirectOnRegistrationComplete();
   }
 
   protected onSubmit(): void {
@@ -48,6 +44,14 @@ export class SetupComponent {
       lastName: this.lastName,
       email: user.email,
       firebaseId: user.uid,
+    });
+  }
+
+  private redirectOnRegistrationComplete(): void {
+    effect(() => {
+      if (this.authStore.currentUser()) {
+        this.router.navigate(["/dashboard"]);
+      }
     });
   }
 }

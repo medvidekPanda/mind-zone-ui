@@ -13,7 +13,7 @@ import { TagModule } from "primeng/tag";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
-import { Session, SessionFormat, SessionPayload, SessionType } from "../../../shared/interfaces/session.interface";
+import { SessionFormat, SessionPayload, SessionType } from "../../../shared/interfaces/session.interface";
 import { ClientStore } from "../../../shared/store/client.store";
 import { SessionStore } from "../../../shared/store/session.store";
 import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
@@ -149,41 +149,8 @@ export class SessionFormComponent {
   }
 
   constructor() {
-    effect(() => {
-      const clients = this.clientStore.clients();
-      if (clients.length === 0) {
-        this.clientStore.loadAll();
-      }
-    });
-
-    effect(() => {
-      const session = this.sessionDetail();
-      const clientId = this.clientId();
-
-      if (clientId) {
-        this.sessionModel.update((m) => ({ ...m, clientId }));
-      }
-
-      if (!session?.id) return;
-
-      const { date, format, type, notes, nextPlan, clientId: sClientId, therapistId, time, duration, tags, price, paid } = session;
-      this.sessionModel.set({ date, format, type, notes, nextPlan, clientId: sClientId, therapistId });
-
-      if (time) {
-        const [hours, minutes] = time.split(":").map(Number);
-        const start = new Date();
-        start.setHours(hours, minutes, 0, 0);
-        this.startTime.set(start);
-
-        if (duration) {
-          this.endTime.set(new Date(start.getTime() + duration * 60000));
-        }
-      }
-
-      this.tags.set(tags ?? []);
-      this.price.set(price ?? null);
-      this.paid.set(paid ?? false);
-    });
+    this.clientStore.loadAll();
+    this.syncFormWithSessionDetail();
   }
 
   protected save(): void {
@@ -228,5 +195,36 @@ export class SessionFormComponent {
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private syncFormWithSessionDetail(): void {
+    effect(() => {
+      const session = this.sessionDetail();
+      const clientId = this.clientId();
+
+      if (clientId) {
+        this.sessionModel.update((m) => ({ ...m, clientId }));
+      }
+
+      if (!session?.id) return;
+
+      const { date, format, type, notes, nextPlan, clientId: sClientId, therapistId, time, duration, tags, price, paid } = session;
+      this.sessionModel.set({ date, format, type, notes, nextPlan, clientId: sClientId, therapistId });
+
+      if (time) {
+        const [hours, minutes] = time.split(":").map(Number);
+        const start = new Date();
+        start.setHours(hours, minutes, 0, 0);
+        this.startTime.set(start);
+
+        if (duration) {
+          this.endTime.set(new Date(start.getTime() + duration * 60000));
+        }
+      }
+
+      this.tags.set(tags ?? []);
+      this.price.set(price ?? null);
+      this.paid.set(paid ?? false);
+    });
   }
 }

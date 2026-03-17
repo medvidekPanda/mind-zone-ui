@@ -66,10 +66,7 @@ export class SessionDetailComponent {
         this.sessionStore.loadSession(id);
       }
 
-      effect(() => {
-        const s = this.session();
-        if (s?.id) this.paid.set(s.paid ?? false);
-      });
+      this.syncPaidWithSession();
     }
   }
 
@@ -103,5 +100,12 @@ export class SessionDetailComponent {
 
   protected onDelete(): void {
     // TODO: implement after API integration
+  }
+
+  private syncPaidWithSession(): void {
+    effect(() => {
+      const s = this.session();
+      if (s?.id) this.paid.set(s.paid ?? false);
+    });
   }
 }

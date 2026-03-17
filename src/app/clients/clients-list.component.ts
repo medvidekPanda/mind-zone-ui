@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
@@ -45,13 +45,7 @@ export class ClientsListComponent {
   protected readonly statusFilter = signal<ClientStatus | null>(null);
 
   constructor() {
-    effect(() => {
-      const clients = this.clientStore.clients();
-
-      if (clients.length === 0) {
-        this.clientStore.loadAll();
-      }
-    });
+    this.clientStore.loadAll();
   }
 
   protected reloadClients(): void {
@@ -83,4 +77,5 @@ export class ClientsListComponent {
   protected deleteClient(_id: string): void {
     this.clientStore.deleteClient(_id);
   }
+
 }

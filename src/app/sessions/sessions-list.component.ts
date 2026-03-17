@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
@@ -10,6 +10,8 @@ import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
+
+import { SessionStore } from "../shared/store/session.store";
 
 interface SessionRow {
   id: string;
@@ -42,20 +44,22 @@ interface SessionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionsListComponent {
+  private readonly sessionStore = inject(SessionStore);
+
+  protected readonly durationFilter = signal<number | null>(null);
   protected readonly formFilter = signal<string | null>(null);
   protected readonly paidFilter = signal<boolean | null>(null);
-  protected readonly durationFilter = signal<number | null>(null);
 
   protected readonly durationOptions = [
-    { label: '45 min', value: 45 },
-    { label: '60 min', value: 60 },
-    { label: '90 min', value: 90 },
-    { label: '120 min', value: 120 },
+    { label: "45 min", value: 45 },
+    { label: "60 min", value: 60 },
+    { label: "90 min", value: 90 },
+    { label: "120 min", value: 120 },
   ];
 
   protected readonly formOptions = [
-    { label: 'Online', value: 'online' },
-    { label: 'Osobně', value: 'osobně' },
+    { label: "Online", value: "online" },
+    { label: "Osobně", value: "osobně" },
   ];
 
   protected readonly paidOptions: { label: string; value: boolean | null }[] = [
@@ -63,28 +67,11 @@ export class SessionsListComponent {
     { label: "Čeká na úhradu", value: false },
   ];
 
-  protected readonly sessions = signal<SessionRow[]>([
-    {
-      id: "1",
-      date: "2025-02-26",
-      time: "09:00",
-      therapistName: "Anna Nováková",
-      clientName: "Jan Novák",
-      duration: 60,
-      form: "osobně",
-      paid: true,
-    },
-    {
-      id: "2",
-      date: "2025-02-26",
-      time: "14:00",
-      therapistName: "Anna Nováková",
-      clientName: "Marie Svobodová",
-      duration: 45,
-      form: "online",
-      paid: false,
-    },
-  ]);
+  protected readonly sessions = computed(() => this.sessionStore.sessions());
+
+  constructor() {
+    this.sessionStore.loadAll();
+  }
 
   protected onPaidFilterChange(
     value: boolean | null,
@@ -109,7 +96,7 @@ export class SessionsListComponent {
     table: { filter: (v: unknown, f: string, m: string) => void },
   ): void {
     this.durationFilter.set(value);
-    table.filter(value, 'duration', 'equals');
+    table.filter(value, "duration", "equals");
   }
 
   protected onFormFilterChange(
@@ -117,7 +104,7 @@ export class SessionsListComponent {
     table: { filter: (v: unknown, f: string, m: string) => void },
   ): void {
     this.formFilter.set(value);
-    table.filter(value, 'form', 'equals');
+    table.filter(value, "form", "equals");
   }
 
   protected deleteSession(_id: string): void {

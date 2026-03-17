@@ -59,20 +59,7 @@ export class UserFormComponent {
   });
 
   constructor() {
-    effect(() => {
-      const user = this.userDetail();
-
-      if (user?.id) {
-        const { firstName, lastName, email, role, firebaseId } = user;
-        this.userModel.set({
-          firstName: firstName ?? "",
-          lastName: lastName ?? "",
-          email: email ?? "",
-          role: role ?? null,
-          firebaseId: firebaseId ?? "",
-        });
-      }
-    });
+    this.syncFormWithUserDetail();
   }
 
   protected save(): void {
@@ -103,5 +90,22 @@ export class UserFormComponent {
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private syncFormWithUserDetail(): void {
+    effect(() => {
+      const user = this.userDetail();
+
+      if (user?.id) {
+        const { firstName, lastName, email, role, firebaseId } = user;
+        this.userModel.set({
+          firstName: firstName ?? "",
+          lastName: lastName ?? "",
+          email: email ?? "",
+          role: role ?? null,
+          firebaseId: firebaseId ?? "",
+        });
+      }
+    });
   }
 }

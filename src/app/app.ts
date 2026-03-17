@@ -27,21 +27,6 @@ export class App {
   private readonly clientStore = inject(ClientStore);
   private readonly sessionStore = inject(SessionStore);
   private readonly userStore = inject(UserStore);
-
-  constructor() {
-    this.authStore.loadCurrentUser();
-    effect(() => {
-      if (this.authStore.needsRegistration()) {
-        this.router.navigate(["/setup"]);
-      } else if (!this.authStore.isLoading() && !this.authStore.isAuthenticated()) {
-        this.clientStore.resetAll();
-        this.sessionStore.resetAll();
-        this.userStore.resetAll();
-        this.router.navigate(["/login"]);
-      }
-    });
-  }
-
   private readonly firebaseUser = toSignal(this.authService.currentUser$);
 
   protected readonly displayName = computed(() => {
@@ -80,4 +65,22 @@ export class App {
       ],
     },
   ];
+
+  constructor() {
+    this.authStore.loadCurrentUser();
+    this.redirectOnAuthChange();
+  }
+
+  private redirectOnAuthChange(): void {
+    effect(() => {
+      if (this.authStore.needsRegistration()) {
+        this.router.navigate(["/setup"]);
+      } else if (!this.authStore.isLoading() && !this.authStore.isAuthenticated()) {
+        this.clientStore.resetAll();
+        this.sessionStore.resetAll();
+        this.userStore.resetAll();
+        this.router.navigate(["/login"]);
+      }
+    });
+  }
 }

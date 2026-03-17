@@ -78,22 +78,7 @@ export class ClientFormComponent {
   });
 
   constructor() {
-    effect(() => {
-      const client = this.clientDetail();
-
-      if (client?.id) {
-        const { firstName, lastName, birthDate, email, phone, gender, status } = client;
-        this.clientModel.set({
-          firstName,
-          lastName,
-          birthDate,
-          email,
-          phone: phone ?? "",
-          gender,
-          status,
-        });
-      }
-    });
+    this.syncFormWithClientDetail();
   }
 
   protected save(): void {
@@ -121,5 +106,24 @@ export class ClientFormComponent {
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private syncFormWithClientDetail(): void {
+    effect(() => {
+      const client = this.clientDetail();
+
+      if (client?.id) {
+        const { firstName, lastName, birthDate, email, phone, gender, status } = client;
+        this.clientModel.set({
+          firstName,
+          lastName,
+          birthDate,
+          email,
+          phone: phone ?? "",
+          gender,
+          status,
+        });
+      }
+    });
   }
 }

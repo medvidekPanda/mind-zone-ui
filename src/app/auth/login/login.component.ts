@@ -27,6 +27,14 @@ export class LoginComponent {
   protected readonly error = this.authStore.error;
 
   constructor() {
+    this.redirectOnAuthChange();
+  }
+
+  protected onSubmit(): void {
+    this.authStore.login({ email: this.email, password: this.password });
+  }
+
+  private redirectOnAuthChange(): void {
     effect(() => {
       if (this.authStore.needsRegistration()) {
         this.router.navigate(["/setup"]);
@@ -34,9 +42,5 @@ export class LoginComponent {
         this.router.navigate(["/dashboard"]);
       }
     });
-  }
-
-  protected onSubmit(): void {
-    this.authStore.login({ email: this.email, password: this.password });
   }
 }
