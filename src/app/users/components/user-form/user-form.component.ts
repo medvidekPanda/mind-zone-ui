@@ -79,13 +79,20 @@ export class UserFormComponent {
       );
 
       if (Object.keys(changed).length > 0) {
-        this.userStore.updateUser({ id: user.id, payload: changed });
+        this.userStore.updateUser({
+          id: user.id,
+          payload: changed,
+          onSuccess: () => this.saved.emit(),
+        });
+      } else {
+        this.saved.emit();
       }
     } else {
-      this.userStore.createUser(full);
+      this.userStore.createUser({
+        payload: full,
+        onSuccess: () => this.saved.emit(),
+      });
     }
-
-    this.saved.emit();
   }
 
   protected cancel(): void {

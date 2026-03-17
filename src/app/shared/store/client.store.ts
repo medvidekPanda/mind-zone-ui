@@ -71,18 +71,19 @@ export const ClientStore = signalStore(
       ),
     ),
 
-    createClient: rxMethod<ClientPayload>(
+    createClient: rxMethod<{ payload: ClientPayload; onSuccess?: () => void }>(
       pipe(
-        tap(() => patchState(store, { isLoading: true })),
-        switchMap((payload) =>
+        tap(() => patchState(store, { isLoading: true, error: null })),
+        switchMap(({ payload, onSuccess }) =>
           clientService.createClient(payload).pipe(
-            tap((newClient) =>
+            tap((newClient) => {
               patchState(store, {
                 clients: [...store.clients(), newClient],
                 isLoading: false,
                 error: null,
-              }),
-            ),
+              });
+              onSuccess?.();
+            }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
               return of(null);
@@ -94,6 +95,7 @@ export const ClientStore = signalStore(
 
     deleteClient: rxMethod<string>(
       pipe(
+        tap(() => patchState(store, { error: null })),
         switchMap((id) => {
           const originalClients = store.clients();
           patchState(store, {
@@ -113,12 +115,15 @@ export const ClientStore = signalStore(
       ),
     ),
 
-    updateClient: rxMethod<{ id: string; payload: ClientPayload }>(
+    updateClient: rxMethod<{ id: string; payload: ClientPayload; onSuccess?: () => void }>(
       pipe(
-        tap(() => patchState(store, { isLoading: true })),
-        switchMap(({ id, payload }) =>
+        tap(() => patchState(store, { isLoading: true, error: null })),
+        switchMap(({ id, payload, onSuccess }) =>
           clientService.updateClient(id, payload).pipe(
-            tap((client) => patchState(store, { client, isLoading: false, error: null })),
+            tap((client) => {
+              patchState(store, { client, isLoading: false, error: null });
+              onSuccess?.();
+            }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
               return of(null);

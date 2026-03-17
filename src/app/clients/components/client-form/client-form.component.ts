@@ -96,12 +96,17 @@ export class ClientFormComponent {
 
     const client = this.clientDetail();
     if (client?.id) {
-      this.clientStore.updateClient({ id: client.id, payload });
+      this.clientStore.updateClient({
+        id: client.id,
+        payload,
+        onSuccess: () => this.saved.emit(),
+      });
     } else {
-      this.clientStore.createClient(payload);
+      this.clientStore.createClient({
+        payload,
+        onSuccess: () => this.saved.emit(),
+      });
     }
-
-    this.saved.emit();
   }
 
   protected cancel(): void {

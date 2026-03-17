@@ -188,12 +188,17 @@ export class SessionFormComponent {
 
     const session = this.sessionDetail();
     if (session?.id) {
-      this.sessionStore.updateSession({ id: session.id, payload });
+      this.sessionStore.updateSession({
+        id: session.id,
+        payload,
+        onSuccess: () => this.saved.emit(),
+      });
     } else {
-      this.sessionStore.createSession(payload);
+      this.sessionStore.createSession({
+        payload,
+        onSuccess: () => this.saved.emit(),
+      });
     }
-
-    this.saved.emit();
   }
 
   protected cancel(): void {
