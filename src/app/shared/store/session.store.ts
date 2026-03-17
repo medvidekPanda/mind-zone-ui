@@ -56,15 +56,12 @@ export const SessionStore = signalStore(
       ),
     ),
 
-    createSession: rxMethod<{ payload: SessionPayload; onSuccess?: () => void }>(
+    createSession: rxMethod<SessionPayload>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ payload, onSuccess }) =>
+        switchMap((payload) =>
           sessionService.createSession(payload).pipe(
-            tap((session) => {
-              patchState(store, { session, isLoading: false, error: null });
-              onSuccess?.();
-            }),
+            tap((session) => patchState(store, { session, isLoading: false, error: null })),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
               return of(null);
@@ -74,15 +71,12 @@ export const SessionStore = signalStore(
       ),
     ),
 
-    updateSession: rxMethod<{ id: string; payload: SessionPayload; onSuccess?: () => void }>(
+    updateSession: rxMethod<{ id: string; payload: SessionPayload }>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ id, payload, onSuccess }) =>
+        switchMap(({ id, payload }) =>
           sessionService.updateSession(id, payload).pipe(
-            tap((session) => {
-              patchState(store, { session, isLoading: false, error: null });
-              onSuccess?.();
-            }),
+            tap((session) => patchState(store, { session, isLoading: false, error: null })),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
               return of(null);

@@ -62,6 +62,7 @@ export class SessionFormComponent {
   private readonly clientStore = inject(ClientStore);
   private readonly sessionStore = inject(SessionStore);
 
+  private readonly saving = signal(false);
   private readonly sessionModel = signal<SessionFormModel>({
     date: null,
     format: null,
@@ -155,6 +156,7 @@ export class SessionFormComponent {
   constructor() {
     this.clientStore.loadAll();
     this.syncFormWithSessionDetail();
+    this.handleSaveResult();
   }
 
   protected save(): void {
@@ -186,23 +188,29 @@ export class SessionFormComponent {
       paid: this.paid(),
     };
 
+    this.saving.set(true);
     const session = this.sessionDetail();
     if (session?.id) {
-      this.sessionStore.updateSession({
-        id: session.id,
-        payload,
-        onSuccess: () => this.saved.emit(),
-      });
+      this.sessionStore.updateSession({ id: session.id, payload });
     } else {
-      this.sessionStore.createSession({
-        payload,
-        onSuccess: () => this.saved.emit(),
-      });
+      this.sessionStore.createSession(payload);
     }
   }
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private handleSaveResult(): void {
+    effect(() => {
+      if (!this.saving()) return;
+      if (this.sessionStore.isLoading()) return;
+
+      this.saving.set(false);
+      if (!this.sessionStore.error()) {
+        this.saved.emit();
+      }
+    });
   }
 
   private syncFormWithSessionDetail(): void {

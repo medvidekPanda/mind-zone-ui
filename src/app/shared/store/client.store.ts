@@ -71,10 +71,10 @@ export const ClientStore = signalStore(
       ),
     ),
 
-    createClient: rxMethod<{ payload: ClientPayload; onSuccess?: () => void }>(
+    createClient: rxMethod<ClientPayload>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ payload, onSuccess }) =>
+        switchMap((payload) =>
           clientService.createClient(payload).pipe(
             tap((newClient) => {
               patchState(store, {
@@ -82,7 +82,6 @@ export const ClientStore = signalStore(
                 isLoading: false,
                 error: null,
               });
-              onSuccess?.();
             }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
@@ -115,14 +114,13 @@ export const ClientStore = signalStore(
       ),
     ),
 
-    updateClient: rxMethod<{ id: string; payload: ClientPayload; onSuccess?: () => void }>(
+    updateClient: rxMethod<{ id: string; payload: ClientPayload }>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ id, payload, onSuccess }) =>
+        switchMap(({ id, payload }) =>
           clientService.updateClient(id, payload).pipe(
             tap((client) => {
               patchState(store, { client, isLoading: false, error: null });
-              onSuccess?.();
             }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });

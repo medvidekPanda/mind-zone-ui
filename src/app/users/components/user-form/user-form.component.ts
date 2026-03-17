@@ -25,6 +25,7 @@ type UserFormModel = Omit<User, "id" | "createdAt" | "updatedAt" | "role" | "fir
 export class UserFormComponent {
   private readonly userStore = inject(UserStore);
 
+  private readonly saving = signal(false);
   private readonly userModel = signal<UserFormModel>({
     firstName: "",
     lastName: "",
@@ -60,6 +61,7 @@ export class UserFormComponent {
 
   constructor() {
     this.syncFormWithUserDetail();
+    this.handleSaveResult();
   }
 
   protected save(): void {
@@ -79,24 +81,31 @@ export class UserFormComponent {
       );
 
       if (Object.keys(changed).length > 0) {
-        this.userStore.updateUser({
-          id: user.id,
-          payload: changed,
-          onSuccess: () => this.saved.emit(),
-        });
+        this.saving.set(true);
+        this.userStore.updateUser({ id: user.id, payload: changed });
       } else {
         this.saved.emit();
       }
     } else {
-      this.userStore.createUser({
-        payload: full,
-        onSuccess: () => this.saved.emit(),
-      });
+      this.saving.set(true);
+      this.userStore.createUser(full);
     }
   }
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private handleSaveResult(): void {
+    effect(() => {
+      if (!this.saving()) return;
+      if (this.userStore.isLoading()) return;
+
+      this.saving.set(false);
+      if (!this.userStore.error()) {
+        this.saved.emit();
+      }
+    });
   }
 
   private syncFormWithUserDetail(): void {

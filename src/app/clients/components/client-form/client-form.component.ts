@@ -36,6 +36,7 @@ type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" 
 export class ClientFormComponent {
   private readonly clientStore = inject(ClientStore);
 
+  private readonly saving = signal(false);
   private readonly clientModel = signal<ClientFormModel>({
     firstName: "",
     lastName: "",
@@ -79,6 +80,7 @@ export class ClientFormComponent {
 
   constructor() {
     this.syncFormWithClientDetail();
+    this.handleSaveResult();
   }
 
   protected save(): void {
@@ -94,23 +96,29 @@ export class ClientFormComponent {
       status: value.status,
     };
 
+    this.saving.set(true);
     const client = this.clientDetail();
     if (client?.id) {
-      this.clientStore.updateClient({
-        id: client.id,
-        payload,
-        onSuccess: () => this.saved.emit(),
-      });
+      this.clientStore.updateClient({ id: client.id, payload });
     } else {
-      this.clientStore.createClient({
-        payload,
-        onSuccess: () => this.saved.emit(),
-      });
+      this.clientStore.createClient(payload);
     }
   }
 
   protected cancel(): void {
     this.cancelled.emit();
+  }
+
+  private handleSaveResult(): void {
+    effect(() => {
+      if (!this.saving()) return;
+      if (this.clientStore.isLoading()) return;
+
+      this.saving.set(false);
+      if (!this.clientStore.error()) {
+        this.saved.emit();
+      }
+    });
   }
 
   private syncFormWithClientDetail(): void {

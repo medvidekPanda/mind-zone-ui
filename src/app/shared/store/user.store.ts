@@ -40,14 +40,13 @@ export const UserStore = signalStore(
       ),
     ),
 
-    createUser: rxMethod<{ payload: UserPayload; onSuccess?: () => void }>(
+    createUser: rxMethod<UserPayload>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ payload, onSuccess }) =>
+        switchMap((payload) =>
           userService.createUser(payload).pipe(
             tap((user) => {
               patchState(store, { user, isLoading: false, error: null });
-              onSuccess?.();
             }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
@@ -58,17 +57,16 @@ export const UserStore = signalStore(
       ),
     ),
 
-    updateUser: rxMethod<{ id: string; payload: Partial<UserPayload>; onSuccess?: () => void }>(
+    updateUser: rxMethod<{ id: string; payload: Partial<UserPayload> }>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
-        switchMap(({ id, payload, onSuccess }) =>
+        switchMap(({ id, payload }) =>
           userService.updateUser(id, payload).pipe(
             tap((user) => {
               patchState(store, { user, isLoading: false, error: null });
               if (authStore.currentUser()?.id === user.id) {
                 authStore.syncCurrentUser(user);
               }
-              onSuccess?.();
             }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
