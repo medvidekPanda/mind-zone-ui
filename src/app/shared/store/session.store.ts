@@ -70,5 +70,6 @@ export const SessionStore = signalStore(
     ),
 
     resetSession: () => patchState(store, { session: null }),
+    resetAll: () => patchState(store, initialState),
   })),
 );

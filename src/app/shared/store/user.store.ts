@@ -76,5 +76,6 @@ export const UserStore = signalStore(
     ),
 
     resetUser: () => patchState(store, { user: null }),
+    resetAll: () => patchState(store, initialState),
   })),
 );

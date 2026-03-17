@@ -10,6 +10,9 @@ import { MenubarModule } from "primeng/menubar";
 
 import { AuthService } from "./shared/service/auth.service";
 import { AuthStore } from "./shared/store/auth.store";
+import { ClientStore } from "./shared/store/client.store";
+import { SessionStore } from "./shared/store/session.store";
+import { UserStore } from "./shared/store/user.store";
 
 @Component({
   selector: "app-root",
@@ -21,6 +24,9 @@ export class App {
   private readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly clientStore = inject(ClientStore);
+  private readonly sessionStore = inject(SessionStore);
+  private readonly userStore = inject(UserStore);
 
   constructor() {
     this.authStore.loadCurrentUser();
@@ -28,6 +34,9 @@ export class App {
       if (this.authStore.needsRegistration()) {
         this.router.navigate(["/setup"]);
       } else if (!this.authStore.isLoading() && !this.authStore.isAuthenticated()) {
+        this.clientStore.resetAll();
+        this.sessionStore.resetAll();
+        this.userStore.resetAll();
         this.router.navigate(["/login"]);
       }
     });

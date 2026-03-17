@@ -25,5 +25,5 @@ export interface Client {
 }
 
 export interface ClientPayload extends Omit<Client, "createdAt" | "id" | "updatedAt"> {
-  userId: string;
+  userId?: string;
 }

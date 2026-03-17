@@ -143,7 +143,6 @@ export const AuthStore = signalStore(
     ),
 
     syncCurrentUser: (user: User) => patchState(store, { currentUser: user }),
-
     clearError: () => patchState(store, { error: null }),
   })),
 );

@@ -105,10 +105,6 @@ export class ClientFormComponent {
 
     const payload: ClientPayload = {
       ...value,
-      /**
-       * @todo user id should be obtained from auth service or with option to change as admin
-       */
-      userId: "019c9b5c-0b2c-74ae-bf97-036f30651efe",
       gender: value.gender,
       status: value.status,
     };
