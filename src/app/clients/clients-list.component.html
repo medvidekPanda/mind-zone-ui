@@ -90,6 +90,7 @@
             optionValue="value"
             placeholder="Stav"
             [showClear]="true"
+            appendTo="body"
             class="w-full text-sm"
           />
         </th>
@@ -118,8 +119,14 @@
 
         <td class="px-6 py-4 text-center">
           <p-tag
-            [value]="client.status === ClientStatus.ACTIVE ? 'Aktivní' : 'Neaktivní'"
-            [severity]="client.status === ClientStatus.ACTIVE ? 'success' : 'secondary'"
+            [value]="client.statusLabel"
+            [severity]="
+              client.status === ClientStatus.ACTIVE
+                ? 'success'
+                : client.status === ClientStatus.STOPPED
+                  ? 'warn'
+                  : 'secondary'
+            "
             [rounded]="true"
           />
         </td>

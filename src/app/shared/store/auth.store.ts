@@ -18,7 +18,7 @@ type AuthState = {
 
 const initialState: AuthState = {
   currentUser: null,
-  isLoading: true, // guard čeká na false — Firebase auth state je async
+  isLoading: true, // guard waits for false — Firebase auth state is async
   error: null,
   isAuthenticated: false,
   needsRegistration: false,

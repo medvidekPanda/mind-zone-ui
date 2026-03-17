@@ -54,7 +54,13 @@ export class SessionDetailComponent {
   protected readonly pageTitle = computed(() => {
     const s = this.session();
     if (this.isNewSession) return "Nové sezení";
-    return this.editing() ? "Úprava sezení" : `Záznam sezení: ${s?.date ?? ""} ${s?.time ?? ""}`;
+    if (this.editing()) return "Úprava sezení";
+    if (!s?.date) return "Záznam sezení";
+
+    const d = new Date(s.date);
+    const formattedDate = d.toLocaleDateString("cs-CZ");
+    const formattedTime = d.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" });
+    return `Záznam sezení: ${formattedDate} ${formattedTime}`;
   });
 
   constructor() {

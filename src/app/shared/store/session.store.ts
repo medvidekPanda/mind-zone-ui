@@ -1,6 +1,6 @@
 import { computed, inject } from "@angular/core";
 
-import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
+import { patchState, signalStore, withMethods, withState } from "@ngrx/signals";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { catchError, of, pipe, switchMap, tap } from "rxjs";
 
@@ -26,14 +26,14 @@ export const SessionStore = signalStore(
   withState(initialState),
 
   withMethods((store, sessionService = inject(SessionService)) => ({
-    loadAll: rxMethod<void>(
+    loadAll: rxMethod<{ from?: string; to?: string; userId?: string } | void>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
-        switchMap(() =>
-          sessionService.getSessions().pipe(
+        switchMap((params) =>
+          sessionService.getSessions(params || undefined).pipe(
             tap((sessions) => patchState(store, { sessions, isLoading: false, error: null })),
-            catchError((err) => {
-              patchState(store, { error: err.message, isLoading: false });
+            catchError((error) => {
+              patchState(store, { error: error.message, isLoading: false });
               return of(null);
             }),
           ),
@@ -47,8 +47,8 @@ export const SessionStore = signalStore(
         switchMap((id) =>
           sessionService.getSession(id).pipe(
             tap((session) => patchState(store, { session, isLoading: false, error: null })),
-            catchError((err) => {
-              patchState(store, { error: err.message, isLoading: false, session: null });
+            catchError((error) => {
+              patchState(store, { error: error.message, isLoading: false, session: null });
               return of(null);
             }),
           ),
@@ -62,8 +62,8 @@ export const SessionStore = signalStore(
         switchMap((payload) =>
           sessionService.createSession(payload).pipe(
             tap((session) => patchState(store, { session, isLoading: false, error: null })),
-            catchError((err) => {
-              patchState(store, { error: err.message, isLoading: false });
+            catchError((error) => {
+              patchState(store, { error: error.message, isLoading: false });
               return of(null);
             }),
           ),
@@ -71,14 +71,35 @@ export const SessionStore = signalStore(
       ),
     ),
 
-    updateSession: rxMethod<{ id: string; payload: SessionPayload }>(
+    updateSession: rxMethod<{ id: string; payload: Partial<SessionPayload> }>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
         switchMap(({ id, payload }) =>
           sessionService.updateSession(id, payload).pipe(
             tap((session) => patchState(store, { session, isLoading: false, error: null })),
-            catchError((err) => {
-              patchState(store, { error: err.message, isLoading: false });
+            catchError((error) => {
+              patchState(store, { error: error.message, isLoading: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    deleteSession: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null })),
+        switchMap((id) =>
+          sessionService.deleteSession(id).pipe(
+            tap(() => {
+              patchState(store, {
+                sessions: store.sessions().filter((session) => session.id !== id),
+                isLoading: false,
+                error: null,
+              });
+            }),
+            catchError((error) => {
+              patchState(store, { error: error.message, isLoading: false });
               return of(null);
             }),
           ),

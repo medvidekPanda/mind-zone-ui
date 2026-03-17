@@ -11,7 +11,8 @@ import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
-import { SessionFormat } from "../shared/interfaces/session.interface";
+import { SESSION_FORM_OPTIONS } from "../shared/constants/session.constants";
+import { AppStore } from "../shared/store/app.store";
 import { SessionStore } from "../shared/store/session.store";
 
 interface SessionRow {
@@ -20,7 +21,7 @@ interface SessionRow {
   time: string;
   therapistName: string;
   clientName: string;
-  duration: number;
+  plannedDurationMinutes: number;
   form: string;
   paid: boolean;
 }
@@ -45,6 +46,7 @@ interface SessionRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionsListComponent {
+  private readonly appStore = inject(AppStore);
   private readonly sessionStore = inject(SessionStore);
 
   protected readonly durationFilter = signal<number | null>(null);
@@ -58,21 +60,30 @@ export class SessionsListComponent {
     { label: "120 min", value: 120 },
   ];
 
-  protected readonly formOptions = [
-    { label: "Online", value: "online" },
-    { label: "Osobně", value: "osobně" },
-  ];
+  protected readonly formOptions = SESSION_FORM_OPTIONS;
 
   protected readonly paidOptions: { label: string; value: boolean | null }[] = [
     { label: "Zaplaceno", value: true },
     { label: "Čeká na úhradu", value: false },
   ];
 
-  protected readonly sessions = computed(() =>
-    this.sessionStore.sessions().map((session) => ({
-      ...session,
-      form: session.format === SessionFormat.ONLINE ? "online" : "osobně",
-    })),
+  protected readonly sessions = computed<SessionRow[]>(() =>
+    this.sessionStore.sessions().map((session) => {
+      const sessionDate = new Date(session.date);
+      const clientName = `${session.client.firstName} ${session.client.lastName}`;
+      const therapistName = `${session.user.firstName} ${session.user.lastName}`;
+
+      return {
+        id: session.id,
+        clientName,
+        therapistName,
+        plannedDurationMinutes: session.plannedDurationMinutes,
+        paid: session.paid,
+        date: sessionDate.toLocaleDateString("cs-CZ"),
+        time: sessionDate.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }),
+        form: this.appStore.getSessionFormLabel(session.form),
+      };
+    }),
   );
 
   constructor() {
@@ -89,6 +100,7 @@ export class SessionsListComponent {
     globalFilterInput: HTMLInputElement,
   ): void {
     this.paidFilter.set(value);
+
     if (value === null) {
       table.clearFilterValues();
       table.filterGlobal(globalFilterInput.value, "contains");
@@ -102,7 +114,7 @@ export class SessionsListComponent {
     table: { filter: (v: unknown, f: string, m: string) => void },
   ): void {
     this.durationFilter.set(value);
-    table.filter(value, "duration", "equals");
+    table.filter(value, "plannedDurationMinutes", "equals");
   }
 
   protected onFormFilterChange(
@@ -113,7 +125,7 @@ export class SessionsListComponent {
     table.filter(value, "form", "equals");
   }
 
-  protected deleteSession(_id: string): void {
-    // Placeholder – no API
+  protected deleteSession(id: string): void {
+    this.sessionStore.deleteSession(id);
   }
 }

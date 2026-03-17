@@ -9,7 +9,7 @@
       />
       <h2 class="m-0 text-xl font-bold text-slate-900">{{ client()!.firstName }} {{ client()!.lastName }}</h2>
       <p-tag
-        [value]="client()!.status"
+        [value]="statusLabel()"
         [severity]="client()!.status === ClientStatus.ACTIVE ? 'success' : 'secondary'"
         [rounded]="true"
         class="mt-2"

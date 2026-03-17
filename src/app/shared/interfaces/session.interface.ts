@@ -1,4 +1,6 @@
-export enum SessionFormat {
+import { Tag } from "./tag.interface";
+
+export enum SessionForm {
   ONLINE = "ONLINE",
   IN_PERSON = "IN_PERSON",
 }
@@ -9,27 +11,65 @@ export enum SessionType {
   GROUP = "GROUP",
 }
 
+export enum SessionStatus {
+  SCHEDULED = "SCHEDULED",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+  NO_SHOW = "NO_SHOW",
+}
+
+export interface SessionAttachment {
+  id: string;
+  name: string;
+  url: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface Session {
   id: string;
   date: string;
-  time: string;
-  format: SessionFormat;
+  form: SessionForm;
   type: SessionType;
-  duration: number;
-  notes: string;
-  nextPlan: string;
-  tags: string[];
-  price: number;
+  status: SessionStatus;
+  plannedDurationMinutes: number;
+  duration: number | null;
+  price: string | number;
   paid: boolean;
+  notes: string;
+  consentToRecord: boolean;
+  nextSessionId: string | null;
+  userId: string;
   clientId: string;
-  therapistId: string;
-  clientName?: string;
-  therapistName?: string;
   createdAt: string;
   updatedAt: string;
+  client: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  tags: Tag[];
+  attachments: SessionAttachment[];
+  nextSession: Session | null;
+  previousSessions: Session[];
 }
 
-export type SessionPayload = Omit<
-  Session,
-  "id" | "createdAt" | "updatedAt" | "therapistId" | "clientName" | "therapistName"
->;
+export interface SessionPayload {
+  date: string;
+  form: SessionForm;
+  type: SessionType;
+  status: SessionStatus;
+  plannedDurationMinutes: number;
+  notes?: string;
+  clientId: string;
+  tagIds?: string[];
+  price?: number;
+  paid?: boolean;
+  consentToRecord?: boolean;
+  nextSessionId?: string | null;
+}

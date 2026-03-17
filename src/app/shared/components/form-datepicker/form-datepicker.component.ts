@@ -23,20 +23,20 @@ export class FormDatepickerComponent implements FormValueControl<string | null> 
   readonly touched = model<boolean>(false);
 
   protected readonly valueAsDate = computed(() => {
-    const v = this.value();
-    if (v == null || v === "") return null;
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? null : d;
+    const currentValue = this.value();
+    if (currentValue == null || currentValue === "") return null;
+    const parsedDate = new Date(currentValue);
+    return isNaN(parsedDate.getTime()) ? null : parsedDate;
   });
 
-  protected setDate(d: Date | null): void {
-    this.value.set(d ? this.formatIso(d) : null);
+  protected setDate(selectedDate: Date | null): void {
+    this.value.set(selectedDate ? this.formatIso(selectedDate) : null);
   }
 
-  private formatIso(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
+  private formatIso(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 }

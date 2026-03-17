@@ -1,7 +1,6 @@
 export enum ClientStatus {
   ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  DELETED = "DELETED",
+  STOPPED = "STOPPED",
   PENDING = "PENDING",
 }
 
@@ -19,7 +18,7 @@ export interface Client {
   birthDate: string;
   status: ClientStatus;
   email: string;
-  phone: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -6,14 +6,16 @@ import { DatePickerModule } from "primeng/datepicker";
 import { DialogModule } from "primeng/dialog";
 import { SelectModule } from "primeng/select";
 
-import { SessionFormat, SessionType } from "../../../shared/interfaces/session.interface";
+import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
+import { SessionForm, SessionType } from "../../../shared/interfaces/session.interface";
+import { roundToNext5Min } from "../../../shared/utils/date.utils";
 
 export interface SchedulePayload {
   clientId: string | null;
   date: Date | null;
   startTime: Date | null;
   endTime: Date | null;
-  format: SessionFormat | null;
+  form: SessionForm | null;
   type: SessionType | null;
 }
 
@@ -35,16 +37,8 @@ export class SessionScheduleDialogComponent {
     { label: "Marie Svobodová", value: "c2" },
   ];
 
-  protected readonly formatOptions: { label: string; value: SessionFormat }[] = [
-    { label: "Online", value: SessionFormat.ONLINE },
-    { label: "Osobně", value: SessionFormat.IN_PERSON },
-  ];
-
-  protected readonly typeOptions: { label: string; value: SessionType }[] = [
-    { label: "Individuální", value: SessionType.INDIVIDUAL },
-    { label: "Párová", value: SessionType.COUPLE },
-    { label: "Skupinová", value: SessionType.GROUP },
-  ];
+  protected readonly formOptions = SESSION_FORM_OPTIONS;
+  protected readonly typeOptions = SESSION_TYPE_OPTIONS;
 
   protected readonly duration = computed(() => {
     const start = this.schedule.startTime;
@@ -57,9 +51,9 @@ export class SessionScheduleDialogComponent {
   protected schedule: SchedulePayload = {
     clientId: null,
     date: null,
-    startTime: SessionScheduleDialogComponent.roundToNext5Min(new Date()),
+    startTime: roundToNext5Min(new Date()),
     endTime: null,
-    format: null,
+    form: null,
     type: null,
   };
 
@@ -68,18 +62,6 @@ export class SessionScheduleDialogComponent {
     if (clientId) {
       this.schedule = { ...this.schedule, clientId };
     }
-  }
-
-  private static roundToNext5Min(date: Date): Date {
-    const d = new Date(date);
-    const min = d.getMinutes();
-    const remainder = min % 5;
-    if (remainder > 0) {
-      d.setMinutes(min + (5 - remainder), 0, 0);
-    } else {
-      d.setSeconds(0, 0);
-    }
-    return d;
   }
 
   protected onSave(): void {

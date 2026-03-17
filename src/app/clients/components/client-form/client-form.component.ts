@@ -9,12 +9,14 @@ import { SelectModule } from "primeng/select";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
+import { CLIENT_GENDER_OPTIONS, CLIENT_STATUS_OPTIONS } from "../../../shared/constants/client.constants";
 import { Client, ClientGender, ClientPayload, ClientStatus } from "../../../shared/interfaces/client.interface";
 import { ClientStore } from "../../../shared/store/client.store";
 
-type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" | "status"> & {
+type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" | "status" | "phone"> & {
   gender: ClientGender | null;
   status: ClientStatus | null;
+  phone: string;
 };
 
 @Component({
@@ -54,16 +56,8 @@ export class ClientFormComponent {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
 
-  protected readonly genderOptions: { label: string; value: ClientGender }[] = [
-    { label: "Muž", value: ClientGender.MALE },
-    { label: "Žena", value: ClientGender.FEMALE },
-    { label: "Jiné", value: ClientGender.OTHER },
-  ];
-
-  protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
-    { label: "Aktivní", value: ClientStatus.ACTIVE },
-    { label: "Neaktivní", value: ClientStatus.INACTIVE },
-  ];
+  protected readonly genderOptions = CLIENT_GENDER_OPTIONS;
+  protected readonly statusOptions = CLIENT_STATUS_OPTIONS;
 
   protected readonly clientForm = form(this.clientModel, (schemaPath) => {
     required(schemaPath.firstName, { message: "Jméno je povinné" });
@@ -84,16 +78,16 @@ export class ClientFormComponent {
   }
 
   protected save(): void {
-    const f = this.clientForm();
-    if (!f.valid()) return;
+    const currentForm = this.clientForm();
+    if (!currentForm.valid()) return;
 
-    const value = f.value() as ClientFormModel;
-    if (value.gender === null || value.status === null) return;
+    const formValue = currentForm.value() as ClientFormModel;
+    if (formValue.gender === null || formValue.status === null) return;
 
     const payload: ClientPayload = {
-      ...value,
-      gender: value.gender,
-      status: value.status,
+      ...formValue,
+      gender: formValue.gender,
+      status: formValue.status,
     };
 
     this.saving.set(true);

@@ -10,7 +10,9 @@ import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 
+import { CLIENT_STATUS_OPTIONS } from "../shared/constants/client.constants";
 import { ClientStatus } from "../shared/interfaces/client.interface";
+import { AppStore } from "../shared/store/app.store";
 import { ClientStore } from "../shared/store/client.store";
 
 @Component({
@@ -32,17 +34,19 @@ import { ClientStore } from "../shared/store/client.store";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientsListComponent {
+  private readonly appStore = inject(AppStore);
   private readonly clientStore = inject(ClientStore);
 
-  protected readonly statusOptions: { label: string; value: ClientStatus }[] = [
-    { label: "Aktivní", value: ClientStatus.ACTIVE },
-    { label: "Neaktivní", value: ClientStatus.INACTIVE },
-  ];
-
-  protected readonly clients = computed(() => this.clientStore.clients());
+  protected readonly clients = computed(() =>
+    this.clientStore.clients().map((client) => ({
+      ...client,
+      statusLabel: this.appStore.getClientStatusLabel(client.status),
+    })),
+  );
   protected readonly ClientStatus = ClientStatus;
 
   protected readonly statusFilter = signal<ClientStatus | null>(null);
+  protected readonly statusOptions = CLIENT_STATUS_OPTIONS;
 
   constructor() {
     this.clientStore.loadAll();
@@ -52,12 +56,8 @@ export class ClientsListComponent {
     this.clientStore.loadAll();
   }
 
-  /**
-   * @todo this is client-side filtering; we should use server-side filtering
-   * Backend does not have filtering implemented yet
-   */
   protected onStatusFilterChange(
-    value: ClientStatus | null,
+    status: ClientStatus | null,
     table: {
       filter: (v: unknown, f: string, m: string) => void;
       clearFilterValues: () => void;
@@ -65,17 +65,16 @@ export class ClientsListComponent {
     },
     globalFilterInput: HTMLInputElement,
   ): void {
-    this.statusFilter.set(value);
-    if (value === null) {
+    this.statusFilter.set(status);
+    if (status === null) {
       table.clearFilterValues();
       table.filterGlobal(globalFilterInput.value, "contains");
     } else {
-      table.filter(value, "status", "equals");
+      table.filter(status, "status", "equals");
     }
   }
 
   protected deleteClient(_id: string): void {
     this.clientStore.deleteClient(_id);
   }
-
 }
