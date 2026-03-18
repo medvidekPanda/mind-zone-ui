@@ -2,9 +2,9 @@ import { computed, inject } from "@angular/core";
 
 import { patchState, signalStore, withMethods, withState } from "@ngrx/signals";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
-import { catchError, of, pipe, switchMap, tap } from "rxjs";
+import { catchError, mergeMap, of, pipe, switchMap, tap } from "rxjs";
 
-import { Session, SessionPayload } from "../interfaces/session.interface";
+import { Session, SessionAttachment, SessionPayload } from "../interfaces/session.interface";
 import { SessionService } from "../service/session.service";
 
 type SessionState = {
@@ -100,6 +100,46 @@ export const SessionStore = signalStore(
             }),
             catchError((error) => {
               patchState(store, { error: error.message, isLoading: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    uploadAttachment: rxMethod<{ sessionId: string; file: File }>(
+      pipe(
+        mergeMap(({ sessionId, file }) =>
+          sessionService.uploadAttachment(sessionId, file).pipe(
+            tap((attachment: SessionAttachment) => {
+              const session = store.session();
+              if (session) {
+                patchState(store, { session: { ...session, attachments: [...session.attachments, attachment] } });
+              }
+            }),
+            catchError((error) => {
+              patchState(store, { error: error.message });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    deleteAttachment: rxMethod<{ sessionId: string; attachmentId: string }>(
+      pipe(
+        switchMap(({ sessionId, attachmentId }) =>
+          sessionService.deleteAttachment(sessionId, attachmentId).pipe(
+            tap(() => {
+              const session = store.session();
+              if (session) {
+                patchState(store, {
+                  session: { ...session, attachments: session.attachments.filter((a) => a.id !== attachmentId) },
+                });
+              }
+            }),
+            catchError((error) => {
+              patchState(store, { error: error.message });
               return of(null);
             }),
           ),

@@ -12,24 +12,39 @@ import {
 import { FormsModule } from "@angular/forms";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
+import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
 import { CheckboxModule } from "primeng/checkbox";
 import { DatePickerModule } from "primeng/datepicker";
 import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
 import { MultiSelectModule } from "primeng/multiselect";
-import { PanelModule } from "primeng/panel";
+import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
-import { SessionForm, SessionPayload, SessionStatus, SessionType } from "../../../shared/interfaces/session.interface";
+import {
+  SessionForm,
+  SessionPayload,
+  SessionStatus,
+  SessionType,
+} from "../../../shared/interfaces/session.interface";
 import { ClientStore } from "../../../shared/store/client.store";
 import { SessionStore } from "../../../shared/store/session.store";
 import { TagStore } from "../../../shared/store/tag.store";
 import { roundToNext5Min } from "../../../shared/utils/date.utils";
 import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
+
+const MOCK_TRANSCRIPTION = `Terapeut: Jak se dnes cítíte?
+Klient: Tento týden byl náročný. Měl jsem hodně práce a cítil jsem se přetížený.
+Terapeut: Můžete mi říct víc o tom přetížení? Jak se projevovalo?
+Klient: Hlavně fyzicky – bolesti hlavy, nemohl jsem usnout. A měl jsem pocit, že všechno musím zvládat sám.
+Terapeut: To téma „zvládání sám" se u vás opakuje. Vzpomínáte si, kdy jste to poprvé pocítil?
+Klient: Asi od dětství. Rodiče byli hodně zaměstnaní, takže jsem se naučil, že se nemám na koho spolehnout.`;
+
+const MOCK_SUMMARY = `Klient přišel s pocitem přetíženosti způsobeným pracovním tlakem. Fyzické projevy zahrnovaly bolesti hlavy a poruchy spánku. Klíčovým tématem bylo přesvědčení o nutnosti zvládat vše samostatně, které klient spojuje s ranou zkušeností z dětství – rodiče byli málo dostupní, čímž se naučil nespoléhat na ostatní. Toto přesvědčení pravděpodobně přetrvává jako schema a bude vhodné ho dále explorovat.`;
 
 type SessionFormModel = {
   date: string | null;
@@ -37,6 +52,8 @@ type SessionFormModel = {
   type: SessionType | null;
   status: SessionStatus | null;
   notes: string;
+  transcription: string;
+  summary: string;
   clientId: string | null;
 };
 
@@ -53,9 +70,10 @@ type SessionFormModel = {
     DatePickerModule,
     CheckboxModule,
     MultiSelectModule,
-    PanelModule,
     TagModule,
     SessionAttachmentsComponent,
+    TabsModule,
+    BadgeModule,
   ],
   templateUrl: "./session-form.component.html",
   host: { class: "flex flex-col" },
@@ -67,12 +85,17 @@ export class SessionFormComponent {
   private readonly tagStore = inject(TagStore);
 
   private readonly saving = signal(false);
+  protected readonly pendingFiles = signal<File[]>([]);
+  protected readonly attachments = computed(() => this.sessionDetail()?.attachments ?? []);
+  protected readonly attachmentCount = computed(() => this.attachments().length + this.pendingFiles().length);
   private readonly sessionModel = signal<SessionFormModel>({
     date: null,
     form: null,
     type: null,
     status: SessionStatus.SCHEDULED,
     notes: "",
+    transcription: "",
+    summary: "",
     clientId: null,
   });
 
@@ -92,15 +115,16 @@ export class SessionFormComponent {
   readonly saved = output<void>();
   readonly cancelled = output<void>();
 
-  protected clientOptions = computed(() =>
-    this.clientStore.clients().map((client) => ({ label: `${client.firstName} ${client.lastName}`, value: client.id })),
-  );
-
-  protected readonly metaSummary = computed(() => {
-    const { clientId, date } = this.sessionModel();
-    const clientLabel = this.clientOptions().find((o) => o.value === clientId)?.label;
-    const parts = [clientLabel, date].filter(Boolean);
-    return parts.length ? parts.join(" · ") : "Basic data";
+  protected clientOptions = computed(() => {
+    const options = this.clientStore.clients().map((client) => ({
+      label: `${client.firstName} ${client.lastName}`,
+      value: client.id,
+    }));
+    const session = this.sessionDetail();
+    if (session?.clientId && session?.client && !options.find((o) => o.value === session.clientId)) {
+      options.push({ label: `${session.client.firstName} ${session.client.lastName}`, value: session.clientId });
+    }
+    return options;
   });
 
   protected readonly duration = computed(() => {
@@ -128,6 +152,8 @@ export class SessionFormComponent {
     readonly(schemaPath.form, this.readonly);
     readonly(schemaPath.type, this.readonly);
     readonly(schemaPath.notes, this.readonly);
+    readonly(schemaPath.transcription, this.readonly);
+    readonly(schemaPath.summary, this.readonly);
     readonly(schemaPath.clientId, this.readonly);
   });
 
@@ -183,6 +209,10 @@ export class SessionFormComponent {
     }
   }
 
+  protected onFileAdded(file: File): void {
+    this.pendingFiles.update((files) => [...files, file]);
+  }
+
   protected cancel(): void {
     this.cancelled.emit();
   }
@@ -194,6 +224,14 @@ export class SessionFormComponent {
 
       this.saving.set(false);
       if (!this.sessionStore.error()) {
+        const session = this.sessionStore.session();
+        const files = this.pendingFiles();
+        if (session?.id && files.length > 0) {
+          for (const file of files) {
+            this.sessionStore.uploadAttachment({ sessionId: session.id, file });
+          }
+          this.pendingFiles.set([]);
+        }
         this.saved.emit();
       }
     });
@@ -215,6 +253,8 @@ export class SessionFormComponent {
         form: sForm,
         type,
         notes,
+        transcription,
+        summary,
         clientId: sClientId,
         plannedDurationMinutes,
         tags: sTags,
@@ -240,6 +280,8 @@ export class SessionFormComponent {
         form: sForm,
         type,
         notes: notes ?? "",
+        transcription: transcription ?? MOCK_TRANSCRIPTION,
+        summary: summary ?? MOCK_SUMMARY,
         clientId: sClientId,
         status: status ?? SessionStatus.SCHEDULED,
       });

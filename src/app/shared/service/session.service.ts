@@ -32,4 +32,14 @@ export class SessionService {
   deleteSession(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/sessions/${id}`);
   }
+
+  uploadAttachment(sessionId: string, file: File): Observable<SessionAttachment> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return this.http.post<SessionAttachment>(`${this.apiUrl}/sessions/${sessionId}/attachments`, formData);
+  }
+
+  deleteAttachment(sessionId: string, attachmentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/sessions/${sessionId}/attachments/${attachmentId}`);
+  }
 }

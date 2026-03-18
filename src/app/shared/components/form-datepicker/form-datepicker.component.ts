@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from "@ang
 import { FormsModule } from "@angular/forms";
 import { FormValueControl } from "@angular/forms/signals";
 
-import { DatePickerModule } from "primeng/datepicker";
+import { DatePicker } from "primeng/datepicker";
 
 @Component({
   selector: "app-form-datepicker",
   standalone: true,
-  imports: [FormsModule, DatePickerModule],
+  imports: [FormsModule, DatePicker],
   templateUrl: "./form-datepicker.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

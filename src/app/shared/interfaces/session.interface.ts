@@ -18,12 +18,16 @@ export enum SessionStatus {
   NO_SHOW = "NO_SHOW",
 }
 
+export type AttachmentProcessingStatus = "pending" | "transcribing" | "analyzing" | "ready" | "error";
+
 export interface SessionAttachment {
   id: string;
   name: string;
   url: string;
   mimeType: string;
   size: number;
+  processingStatus?: AttachmentProcessingStatus;
+  transcript?: string;
 }
 
 export interface Session {
@@ -37,6 +41,8 @@ export interface Session {
   price: string | number;
   paid: boolean;
   notes: string;
+  transcription: string | null;
+  summary: string | null;
   consentToRecord: boolean;
   nextSessionId: string | null;
   userId: string;

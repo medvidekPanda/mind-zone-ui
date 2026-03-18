@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, model, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { ButtonModule } from "primeng/button";
-import { DatePickerModule } from "primeng/datepicker";
-import { DialogModule } from "primeng/dialog";
-import { SelectModule } from "primeng/select";
+import { Button } from "primeng/button";
+import { DatePicker } from "primeng/datepicker";
+import { Dialog } from "primeng/dialog";
+import { Select } from "primeng/select";
 
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
 import { SessionForm, SessionType } from "../../../shared/interfaces/session.interface";
@@ -22,7 +22,7 @@ export interface SchedulePayload {
 @Component({
   selector: "app-session-schedule-dialog",
   standalone: true,
-  imports: [FormsModule, DialogModule, ButtonModule, DatePickerModule, SelectModule],
+  imports: [FormsModule, Dialog, Button, DatePicker, Select],
   templateUrl: "./session-schedule-dialog.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

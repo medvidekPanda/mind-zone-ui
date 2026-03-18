@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { FormValueControl } from "@angular/forms/signals";
-import { SelectModule } from "primeng/select";
+import { Select } from "primeng/select";
 
 @Component({
   selector: "app-form-select",
   standalone: true,
-  imports: [FormsModule, SelectModule],
+  imports: [FormsModule, Select],
   templateUrl: "./form-select.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
