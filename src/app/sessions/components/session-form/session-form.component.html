@@ -161,21 +161,11 @@
       <div class="flex flex-col gap-2">
         <button
           (click)="save()"
+          [disabled]="!sessionForm().valid()"
           type="button"
           pButton
           label="Uložit záznam"
           icon="pi pi-check"
-          class="w-full"
-        ></button>
-        <button
-          (click)="cancel()"
-          type="button"
-          pButton
-          label="Zrušit"
-          icon="pi pi-times"
-          severity="secondary"
-          [text]="true"
-          class="w-full"
         ></button>
       </div>
     }
@@ -269,6 +259,7 @@
             [attachments]="attachments()"
             [pendingFiles]="pendingFiles()"
             (fileAdded)="onFileAdded($event)"
+            (attachmentUploaded)="onAttachmentUploaded($event)"
           />
         </p-tabpanel>
       </p-tabpanels>

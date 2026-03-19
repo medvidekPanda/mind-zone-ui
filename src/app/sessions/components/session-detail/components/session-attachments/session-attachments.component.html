@@ -1,4 +1,10 @@
-<input #fileInput type="file" multiple class="hidden" (change)="onFileSelected($event)" />
+<input
+  #fileInput
+  type="file"
+  multiple
+  class="hidden"
+  (change)="onFileSelected($event)"
+/>
 
 <!-- Drag & drop zone -->
 <div
@@ -13,23 +19,54 @@
 <!-- Seznam příloh -->
 @if (hasContent()) {
   <div class="flex flex-col gap-2">
-
     @for (attachment of attachments(); track attachment.id) {
       <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-50 border border-surface-100">
         <i class="pi pi-file text-surface-400 text-lg shrink-0"></i>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-surface-700 truncate">{{ attachment.name }}</p>
           <div class="flex items-center gap-2 mt-0.5">
-            <span class="text-xs text-surface-400">{{ formatSize(attachment.size) }}</span>
+            <span class="text-xs text-surface-400">{{ attachment.size | fileSize }}</span>
             @if (attachment.processingStatus) {
-              <span class="flex items-center gap-1 text-xs" [class]="attachment.processingStatus === 'error' ? 'text-red-400' : attachment.processingStatus === 'ready' ? 'text-green-500' : 'text-blue-400'">
-                <i class="pi text-xs" [class]="getStatusIcon(attachment.processingStatus)"></i>
-                {{ getStatusLabel(attachment.processingStatus) }}
+              <span
+                class="flex items-center gap-1 text-xs"
+                [class]="
+                  attachment.processingStatus === 'error'
+                    ? 'text-red-400'
+                    : attachment.processingStatus === 'ready'
+                      ? 'text-green-500'
+                      : 'text-blue-400'
+                "
+              >
+                <i
+                  class="pi text-xs"
+                  [class]="attachment.processingStatus | attachmentStatusIcon"
+                ></i>
+                {{ attachment.processingStatus | attachmentStatusLabel }}
               </span>
             }
           </div>
         </div>
-        <button type="button" pButton icon="pi pi-times" size="small" text severity="danger" (click)="deleteAttachment(attachment.id)" pTooltip="Odebrat"></button>
+
+        <button
+          type="button"
+          pButton
+          icon="pi pi-download"
+          size="small"
+          text
+          (click)="downloadAttachment(attachment)"
+          pTooltip="Stáhnout"
+        ></button>
+
+        <button
+          type="button"
+          pButton
+          icon="pi pi-times"
+          size="small"
+          text
+          severity="danger"
+          (click)="deleteAttachment(attachment.id)"
+          pTooltip="Odebrat"
+        ></button>
       </div>
     }
 
@@ -44,16 +81,24 @@
     }
 
     @for (entry of uploadStates() | keyvalue; track entry.key) {
-      @if (entry.value === 'uploading') {
+      @if (entry.value.status === "uploading") {
         <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-50 border border-surface-100">
           <i class="pi pi-spin pi-spinner text-blue-400 text-lg shrink-0"></i>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-surface-700 truncate">{{ entry.key }}</p>
-            <span class="text-xs text-blue-400">Nahrávání…</span>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 bg-surface-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-blue-400 rounded-full transition-all duration-300"
+                  [style.width.%]="entry.value.percent"
+                ></div>
+              </div>
+              <span class="text-xs text-blue-400 tabular-nums w-8 text-right">{{ entry.value.percent }}%</span>
+            </div>
           </div>
         </div>
       }
-      @if (entry.value === 'error') {
+      @if (entry.value.status === "error") {
         <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-red-50 border border-red-100">
           <i class="pi pi-exclamation-circle text-red-400 text-lg shrink-0"></i>
           <div class="flex-1 min-w-0">
@@ -63,6 +108,5 @@
         </div>
       }
     }
-
   </div>
 }

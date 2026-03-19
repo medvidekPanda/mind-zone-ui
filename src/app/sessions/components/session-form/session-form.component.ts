@@ -25,12 +25,8 @@ import { TagModule } from "primeng/tag";
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
-import {
-  SessionForm,
-  SessionPayload,
-  SessionStatus,
-  SessionType,
-} from "../../../shared/interfaces/session.interface";
+import { SessionForm, SessionPayload, SessionStatus, SessionType } from "../../../shared/interfaces/session.interface";
+import { SessionService } from "../../../shared/service/session.service";
 import { ClientStore } from "../../../shared/store/client.store";
 import { SessionStore } from "../../../shared/store/session.store";
 import { TagStore } from "../../../shared/store/tag.store";
@@ -81,6 +77,7 @@ type SessionFormModel = {
 })
 export class SessionFormComponent {
   private readonly clientStore = inject(ClientStore);
+  private readonly sessionService = inject(SessionService);
   private readonly sessionStore = inject(SessionStore);
   private readonly tagStore = inject(TagStore);
 
@@ -166,7 +163,6 @@ export class SessionFormComponent {
 
   protected save(): void {
     const currentForm = this.sessionForm();
-    console.log(currentForm);
     if (!currentForm.valid()) return;
 
     const formValue = currentForm.value() as SessionFormModel;
@@ -198,10 +194,9 @@ export class SessionFormComponent {
       paid: this.paid(),
     };
 
-    console.log(payload);
-
     this.saving.set(true);
     const session = this.sessionDetail();
+
     if (session?.id) {
       this.sessionStore.updateSession({ id: session.id, payload });
     } else {
@@ -213,25 +208,29 @@ export class SessionFormComponent {
     this.pendingFiles.update((files) => [...files, file]);
   }
 
-  protected cancel(): void {
-    this.cancelled.emit();
+  protected onAttachmentUploaded(sessionId: string) {
+    this.sessionStore.loadSession(sessionId);
   }
 
   private handleSaveResult(): void {
     effect(() => {
-      if (!this.saving()) return;
-      if (this.sessionStore.isLoading()) return;
+      if (!this.saving() || this.sessionStore.isLoading()) return;
 
       this.saving.set(false);
+
       if (!this.sessionStore.error()) {
         const session = this.sessionStore.session();
         const files = this.pendingFiles();
+
         if (session?.id && files.length > 0) {
           for (const file of files) {
+            // Voláme store, ne servisu přímo. 
+            // Store je root-provided, takže nahrávání doběhne i po navigaci pryč.
             this.sessionStore.uploadAttachment({ sessionId: session.id, file });
           }
           this.pendingFiles.set([]);
         }
+
         this.saved.emit();
       }
     });

@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpEvent } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 
 import { Observable } from "rxjs";
@@ -37,6 +37,22 @@ export class SessionService {
     const formData = new FormData();
     formData.append("file", file);
     return this.http.post<SessionAttachment>(`${this.apiUrl}/sessions/${sessionId}/attachments`, formData);
+  }
+
+  uploadAttachmentWithProgress(sessionId: string, file: File): Observable<HttpEvent<SessionAttachment>> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return this.http.post<SessionAttachment>(`${this.apiUrl}/sessions/${sessionId}/attachments`, formData, {
+      reportProgress: true,
+      observe: "events",
+    });
+  }
+
+  downloadAttachment(sessionId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/sessions/${sessionId}/attachments/${attachmentId}/download`, {
+      responseType: "blob",
+    });
   }
 
   deleteAttachment(sessionId: string, attachmentId: string): Observable<void> {

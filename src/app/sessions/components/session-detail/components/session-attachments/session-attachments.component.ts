@@ -1,22 +1,48 @@
 import { KeyValuePipe } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output, signal, viewChild } from "@angular/core";
+import { HttpEventType } from "@angular/common/http";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  output,
+  viewChild,
+} from "@angular/core";
+import { outputFromObservable, toSignal } from "@angular/core/rxjs-interop";
 
 import { ButtonDirective } from "primeng/button";
 import { Tooltip } from "primeng/tooltip";
+import { Subject, catchError, filter, firstValueFrom, map, mergeMap, of, scan, share, startWith } from "rxjs";
 
 import { SessionAttachment } from "../../../../../shared/interfaces/session.interface";
+import { SessionService } from "../../../../../shared/service/session.service";
 import { SessionStore } from "../../../../../shared/store/session.store";
+import { AttachmentStatusIconPipe } from "./attachment-status-icon.pipe";
+import { AttachmentStatusLabelPipe } from "./attachment-status-label.pipe";
+import { FileSizePipe } from "./file-size.pipe";
 
-type UploadState = "uploading" | "error";
+interface UploadProgress {
+  status: "uploading" | "error";
+  percent: number;
+}
+
+interface UploadEvent {
+  type: "progress" | "complete" | "error";
+  fileName: string;
+  percent?: number;
+  sessionId?: string;
+}
 
 @Component({
   selector: "app-session-attachments",
-  standalone: true,
-  imports: [ButtonDirective, Tooltip, KeyValuePipe],
+  imports: [ButtonDirective, Tooltip, KeyValuePipe, AttachmentStatusIconPipe, AttachmentStatusLabelPipe, FileSizePipe],
   templateUrl: "./session-attachments.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionAttachmentsComponent {
+  private readonly sessionService = inject(SessionService);
   private readonly sessionStore = inject(SessionStore);
 
   readonly sessionId = input<string | null>(null);
@@ -26,8 +52,55 @@ export class SessionAttachmentsComponent {
   readonly fileAdded = output<File>();
 
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>("fileInput");
+  private readonly uploadTrigger$ = new Subject<{ sessionId: string; file: File }>();
 
-  protected readonly uploadStates = signal<Map<string, UploadState>>(new Map());
+  private readonly uploadEvents$ = this.uploadTrigger$.pipe(
+    mergeMap(({ sessionId, file }) =>
+      this.sessionService.uploadAttachmentWithProgress(sessionId, file).pipe(
+        map((event): UploadEvent | null => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const percent = event.total ? Math.round((event.loaded / event.total) * 100) : 0;
+            return { type: "progress", fileName: file.name, percent };
+          }
+          if (event.type === HttpEventType.Response) {
+            return { type: "complete", fileName: file.name, sessionId };
+          }
+          return null;
+        }),
+        filter((event): event is UploadEvent => event !== null),
+        startWith({ type: "progress" as const, fileName: file.name, percent: 0 }),
+        catchError(() => of<UploadEvent>({ type: "error", fileName: file.name })),
+      ),
+    ),
+    share(),
+  );
+
+  readonly attachmentUploaded = outputFromObservable(
+    this.uploadEvents$.pipe(
+      filter((e): e is UploadEvent & { sessionId: string } => e.type === "complete" && !!e.sessionId),
+      map((e) => e.sessionId),
+    ),
+  );
+
+  protected readonly uploadStates = toSignal(
+    this.uploadEvents$.pipe(
+      scan((acc, event) => {
+        const next = new Map(acc);
+
+        if (event.type === "complete") {
+          next.delete(event.fileName);
+        } else if (event.type === "error") {
+          next.set(event.fileName, { status: "error", percent: 0 });
+        } else {
+          next.set(event.fileName, { status: "uploading", percent: event.percent ?? 0 });
+        }
+
+        return next;
+      }, new Map<string, UploadProgress>()),
+      startWith(new Map<string, UploadProgress>()),
+    ),
+    { initialValue: new Map<string, UploadProgress>() },
+  );
 
   protected readonly hasContent = computed(
     () => this.attachments().length > 0 || this.pendingFiles().length > 0 || this.uploadStates().size > 0,
@@ -44,67 +117,33 @@ export class SessionAttachmentsComponent {
 
     for (const file of files) {
       const sessionId = this.sessionId();
+
       if (sessionId) {
-        this.uploadFile(sessionId, file);
+        this.uploadTrigger$.next({ sessionId, file });
       } else {
         this.fileAdded.emit(file);
       }
     }
   }
 
-  protected deleteAttachment(attachmentId: string): void {
+  protected downloadAttachment(attachment: SessionAttachment): void {
     const sessionId = this.sessionId();
     if (!sessionId) return;
+
+    this.sessionService.downloadAttachment(sessionId, attachment.id).subscribe((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = attachment.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  protected async deleteAttachment(attachmentId: string): Promise<void> {
+    const sessionId = this.sessionId();
+    if (!sessionId) return;
+
     this.sessionStore.deleteAttachment({ sessionId, attachmentId });
-  }
-
-  protected formatSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  protected getStatusIcon(status?: string): string {
-    switch (status) {
-      case "ready": return "pi-check-circle";
-      case "transcribing": return "pi-spin pi-spinner";
-      case "analyzing": return "pi-spin pi-spinner";
-      case "error": return "pi-exclamation-circle";
-      default: return "pi-clock";
-    }
-  }
-
-  protected getStatusLabel(status?: string): string {
-    switch (status) {
-      case "ready": return "Připraveno";
-      case "transcribing": return "Přepisuje se...";
-      case "analyzing": return "Analyzuje se...";
-      case "error": return "Chyba zpracování";
-      default: return "Čeká na zpracování";
-    }
-  }
-
-  private uploadFile(sessionId: string, file: File): void {
-    this.uploadStates.update((map) => new Map(map).set(file.name, "uploading"));
-
-    this.sessionStore.uploadAttachment({ sessionId, file });
-
-    // Track upload result by watching attachments input for the new file
-    const checkInterval = setInterval(() => {
-      const found = this.attachments().some((a) => a.name === file.name);
-      const hasError = this.sessionStore.error();
-
-      if (found) {
-        this.uploadStates.update((map) => {
-          const next = new Map(map);
-          next.delete(file.name);
-          return next;
-        });
-        clearInterval(checkInterval);
-      } else if (hasError) {
-        this.uploadStates.update((map) => new Map(map).set(file.name, "error"));
-        clearInterval(checkInterval);
-      }
-    }, 500);
   }
 }
