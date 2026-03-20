@@ -4,12 +4,11 @@ import { RouterLink } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 
-import { SessionScheduleDialogComponent } from "../session-schedule-dialog/session-schedule-dialog.component";
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
+import { SessionScheduleDialogComponent } from "../session-schedule-dialog/session-schedule-dialog.component";
 
 @Component({
   selector: "app-sessions-calendar",
-  standalone: true,
   imports: [PageHeaderComponent, RouterLink, ButtonModule, CardModule, SessionScheduleDialogComponent],
   templateUrl: "./sessions-calendar.component.html",
   host: { class: "flex flex-col overflow-hidden h-full" },

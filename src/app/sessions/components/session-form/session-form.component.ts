@@ -33,8 +33,6 @@ import { roundToNext5Min } from "../../../shared/utils/date.utils";
 import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
 import { TranscriptViewerComponent } from "./transcript-viewer.component";
 
-const MOCK_SUMMARY = `Klient přišel s pocitem přetíženosti způsobeným pracovním tlakem. Fyzické projevy zahrnovaly bolesti hlavy a poruchy spánku. Klíčovým tématem bylo přesvědčení o nutnosti zvládat vše samostatně, které klient spojuje s ranou zkušeností z dětství – rodiče byli málo dostupní, čímž se naučil nespoléhat na ostatní. Toto přesvědčení pravděpodobně přetrvává jako schema a bude vhodné ho dále explorovat.`;
-
 type SessionFormModel = {
   date: string | null;
   form: SessionForm | null;
@@ -225,7 +223,7 @@ export class SessionFormComponent {
 
         if (session?.id && files.length > 0) {
           for (const file of files) {
-            // Voláme store, ne servisu přímo. 
+            // Voláme store, ne servisu přímo.
             // Store je root-provided, takže nahrávání doběhne i po navigaci pryč.
             this.sessionStore.uploadAttachment({ sessionId: session.id, file });
           }
@@ -279,7 +277,7 @@ export class SessionFormComponent {
         form: sForm,
         type,
         notes: notes ?? "",
-        summary: summary ?? MOCK_SUMMARY,
+        summary: summary ?? "",
         clientId: sClientId,
         status: status ?? SessionStatus.SCHEDULED,
       });

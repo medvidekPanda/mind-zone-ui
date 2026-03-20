@@ -17,7 +17,6 @@ import { ClientStore } from "../shared/store/client.store";
 
 @Component({
   selector: "app-clients-list",
-  standalone: true,
   imports: [
     RouterLink,
     FormsModule,

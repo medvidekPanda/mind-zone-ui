@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
-import { rxResource } from "@angular/core/rxjs-interop";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
@@ -11,14 +10,12 @@ import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
-import { take } from "rxjs";
 
 import { UserRole } from "../shared/interfaces/user.interface";
-import { UserService } from "../shared/service/user.service";
+import { UserStore } from "../shared/store/user.store";
 
 @Component({
   selector: "app-users-list",
-  standalone: true,
   imports: [
     RouterLink,
     FormsModule,
@@ -36,22 +33,21 @@ import { UserService } from "../shared/service/user.service";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersListComponent {
-  private readonly userService = inject(UserService);
-
-  private readonly userListResource = rxResource({
-    stream: () => this.userService.getUsers(),
-    defaultValue: [],
-  });
+  private readonly userStore = inject(UserStore);
 
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
     { label: "Uživatel", value: UserRole.USER },
     { label: "Administrátor", value: UserRole.ADMIN },
   ];
 
-  protected readonly users = computed(() => this.userListResource.value());
+  protected readonly users = computed(() => this.userStore.users());
   protected readonly UserRole = UserRole;
 
   protected readonly roleFilter = signal<UserRole | null>(null);
+
+  constructor() {
+    this.userStore.loadAll();
+  }
 
   protected onRoleFilterChange(
     value: UserRole | null,
@@ -71,7 +67,7 @@ export class UsersListComponent {
     }
   }
 
-  protected deleteUser(_id: string): void {
-    this.userService.deleteUser(_id).pipe(take(1)).subscribe();
+  protected deleteUser(id: string): void {
+    this.userStore.deleteUser(id);
   }
 }

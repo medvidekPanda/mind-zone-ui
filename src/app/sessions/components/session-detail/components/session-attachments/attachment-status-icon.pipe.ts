@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from "@angular/core";
 
-@Pipe({ name: "attachmentStatusIcon", standalone: true })
+@Pipe({ name: "attachmentStatusIcon" })
 export class AttachmentStatusIconPipe implements PipeTransform {
   transform(status?: string): string {
     switch (status) {

@@ -12,7 +12,6 @@ import { SessionFormComponent } from "../session-form/session-form.component";
 
 @Component({
   selector: "app-session-detail",
-  standalone: true,
   imports: [ButtonModule, MenuModule, PageHeaderComponent, RouterLink, SessionFormComponent],
   templateUrl: "./session-detail.component.html",
   host: { class: "flex flex-col overflow-hidden h-full" },

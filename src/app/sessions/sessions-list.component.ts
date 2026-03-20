@@ -28,7 +28,6 @@ interface SessionRow {
 
 @Component({
   selector: "app-sessions-list",
-  standalone: true,
   imports: [
     RouterLink,
     FormsModule,

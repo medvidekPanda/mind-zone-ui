@@ -17,8 +17,9 @@
       <p-select
         appendTo="body"
         id="dlg-client"
-        [options]="clientOptions"
-        [(ngModel)]="schedule.clientId"
+        [options]="clientOptions()"
+        [ngModel]="selectedClientId()"
+        (ngModelChange)="selectedClientId.set($event)"
         optionLabel="label"
         optionValue="value"
         placeholder="Vyberte klienta"
@@ -35,7 +36,8 @@
       <p-datepicker
         appendTo="body"
         id="dlg-date"
-        [(ngModel)]="schedule.date"
+        [ngModel]="date()"
+        (ngModelChange)="date.set($event)"
         dateFormat="dd.mm.yy"
         placeholder="Vyberte datum"
         class="w-full"
@@ -52,7 +54,8 @@
         <p-datepicker
           appendTo="body"
           id="dlg-start"
-          [(ngModel)]="schedule.startTime"
+          [ngModel]="startTime()"
+          (ngModelChange)="startTime.set($event)"
           timeOnly
           placeholder="HH:mm"
           class="w-full"
@@ -67,7 +70,8 @@
         <p-datepicker
           appendTo="body"
           id="dlg-end"
-          [(ngModel)]="schedule.endTime"
+          [ngModel]="endTime()"
+          (ngModelChange)="endTime.set($event)"
           timeOnly
           placeholder="HH:mm"
           class="w-full"
@@ -92,7 +96,8 @@
           appendTo="body"
           id="dlg-form"
           [options]="formOptions"
-          [(ngModel)]="schedule.form"
+          [ngModel]="selectedForm()"
+          (ngModelChange)="selectedForm.set($event)"
           optionLabel="label"
           optionValue="value"
           placeholder="Vyberte"
@@ -109,7 +114,8 @@
           appendTo="body"
           id="dlg-type"
           [options]="typeOptions"
-          [(ngModel)]="schedule.type"
+          [ngModel]="selectedType()"
+          (ngModelChange)="selectedType.set($event)"
           optionLabel="label"
           optionValue="value"
           placeholder="Vyberte"

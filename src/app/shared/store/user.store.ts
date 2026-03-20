@@ -5,16 +5,18 @@ import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { catchError, of, pipe, switchMap, tap } from "rxjs";
 
 import { User, UserPayload } from "../interfaces/user.interface";
-import { AuthStore } from "./auth.store";
 import { UserService } from "../service/user.service";
+import { AuthStore } from "./auth.store";
 
 type UserState = {
+  users: User[];
   user: User | null;
   isLoading: boolean;
   error: string | null;
 };
 
 const initialState: UserState = {
+  users: [],
   user: null,
   isLoading: false,
   error: null,
@@ -25,6 +27,21 @@ export const UserStore = signalStore(
   withState(initialState),
 
   withMethods((store, userService = inject(UserService), authStore = inject(AuthStore)) => ({
+    loadAll: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true })),
+        switchMap(() =>
+          userService.getUsers().pipe(
+            tap((users) => patchState(store, { users, isLoading: false, error: null })),
+            catchError((err) => {
+              patchState(store, { error: err.message, isLoading: false });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
     loadUser: rxMethod<string>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
@@ -74,6 +91,23 @@ export const UserStore = signalStore(
             }),
           ),
         ),
+      ),
+    ),
+
+    deleteUser: rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { error: null })),
+        switchMap((id) => {
+          const originalUsers = store.users();
+          patchState(store, { users: originalUsers.filter((u) => u.id !== id) });
+
+          return userService.deleteUser(id).pipe(
+            catchError((err) => {
+              patchState(store, { users: originalUsers, error: err.message });
+              return of(null);
+            }),
+          );
+        }),
       ),
     ),
 

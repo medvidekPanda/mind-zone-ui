@@ -6,7 +6,6 @@ import { DatePicker } from "primeng/datepicker";
 
 @Component({
   selector: "app-form-datepicker",
-  standalone: true,
   imports: [FormsModule, DatePicker],
   templateUrl: "./form-datepicker.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

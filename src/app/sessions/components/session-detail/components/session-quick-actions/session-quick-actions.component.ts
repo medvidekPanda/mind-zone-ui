@@ -5,7 +5,6 @@ import { DividerModule } from "primeng/divider";
 
 @Component({
   selector: "app-session-quick-actions",
-  standalone: true,
   imports: [ButtonModule, DividerModule],
   templateUrl: "./session-quick-actions.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

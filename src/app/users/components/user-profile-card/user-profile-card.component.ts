@@ -8,7 +8,6 @@ import { User, UserRole } from "../../../shared/interfaces/user.interface";
 
 @Component({
   selector: "app-user-profile-card",
-  standalone: true,
   imports: [AvatarModule, CardModule, TagModule],
   templateUrl: "./user-profile-card.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

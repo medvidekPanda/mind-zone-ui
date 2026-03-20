@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@a
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
+import { MenuItem } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { MenuModule } from "primeng/menu";
-import { MenuItem } from "primeng/api";
 
 import { SessionScheduleDialogComponent } from "../../../sessions/components/session-schedule-dialog/session-schedule-dialog.component";
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
@@ -16,7 +16,6 @@ import { ClientStatsComponent } from "../client-stats/client-stats.component";
 
 @Component({
   selector: "app-client-detail",
-  standalone: true,
   imports: [
     ButtonModule,
     CardModule,

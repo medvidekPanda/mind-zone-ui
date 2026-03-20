@@ -9,7 +9,6 @@ import { AppStore } from "../../../shared/store/app.store";
 
 @Component({
   selector: "app-client-profile-card",
-  standalone: true,
   imports: [AvatarModule, CardModule, TagModule],
   templateUrl: "./client-profile-card.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -11,7 +11,6 @@ import { AuthStore } from "../../shared/store/auth.store";
 
 @Component({
   selector: "app-login",
-  standalone: true,
   imports: [FormsModule, ButtonModule, InputTextModule, PasswordModule, CardModule],
   templateUrl: "./login.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

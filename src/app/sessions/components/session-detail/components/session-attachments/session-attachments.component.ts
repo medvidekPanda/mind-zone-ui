@@ -16,7 +16,22 @@ import { outputFromObservable, toObservable, toSignal } from "@angular/core/rxjs
 
 import { ButtonDirective } from "primeng/button";
 import { Tooltip } from "primeng/tooltip";
-import { EMPTY, Subject, catchError, distinctUntilChanged, filter, map, merge, mergeMap, of, scan, share, startWith, switchMap, tap } from "rxjs";
+import {
+  EMPTY,
+  Subject,
+  catchError,
+  distinctUntilChanged,
+  filter,
+  map,
+  merge,
+  mergeMap,
+  of,
+  scan,
+  share,
+  startWith,
+  switchMap,
+  tap,
+} from "rxjs";
 
 import { SessionAttachment } from "../../../../../shared/interfaces/session.interface";
 import { SessionService } from "../../../../../shared/service/session.service";
@@ -60,6 +75,9 @@ export class SessionAttachmentsComponent {
   readonly showTranscript = output<string>();
 
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>("fileInput");
+  private readonly downloadTrigger$ = new Subject<{ sessionId: string; attachment: SessionAttachment }>();
+  private readonly audioLoadTrigger$ = new Subject<{ sessionId: string; attachment: SessionAttachment }>();
+
   private readonly uploadTrigger$ = new Subject<{ sessionId: string; file: File }>();
 
   private readonly uploadEvents$ = this.uploadTrigger$.pipe(
@@ -145,6 +163,39 @@ export class SessionAttachmentsComponent {
 
   private readonly _trackProgress = toSignal(this.transcriptionProgress$);
 
+  private readonly _downloads = toSignal(
+    this.downloadTrigger$.pipe(
+      mergeMap(({ sessionId, attachment }) =>
+        this.sessionService.downloadAttachment(sessionId, attachment.id).pipe(
+          tap((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = attachment.name;
+            a.click();
+            URL.revokeObjectURL(url);
+          }),
+          catchError(() => EMPTY),
+        ),
+      ),
+    ),
+  );
+
+  private readonly _audioLoads = toSignal(
+    this.audioLoadTrigger$.pipe(
+      filter(({ attachment }) => !this.audioUrls().has(attachment.id)),
+      mergeMap(({ sessionId, attachment }) =>
+        this.sessionService.downloadAttachment(sessionId, attachment.id).pipe(
+          tap((blob) => {
+            const url = URL.createObjectURL(blob);
+            this.audioUrls.update((m) => new Map(m).set(attachment.id, url));
+          }),
+          catchError(() => EMPTY),
+        ),
+      ),
+    ),
+  );
+
   constructor() {
     this.destroyRef.onDestroy(() => {
       for (const url of this.audioUrls().values()) URL.revokeObjectURL(url);
@@ -179,14 +230,7 @@ export class SessionAttachmentsComponent {
     const sessionId = this.sessionId();
     if (!sessionId) return;
 
-    this.sessionService.downloadAttachment(sessionId, attachment.id).subscribe((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = attachment.name;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    this.downloadTrigger$.next({ sessionId, attachment });
   }
 
   protected async deleteAttachment(attachmentId: string): Promise<void> {
@@ -213,12 +257,8 @@ export class SessionAttachmentsComponent {
 
   protected loadAudioUrl(attachment: SessionAttachment): void {
     const sessionId = this.sessionId();
-    if (!sessionId || this.audioUrls().has(attachment.id)) return;
+    if (!sessionId) return;
 
-    this.sessionService.downloadAttachment(sessionId, attachment.id).subscribe((blob) => {
-      const url = URL.createObjectURL(blob);
-      this.audioUrls.update((map) => new Map(map).set(attachment.id, url));
-    });
+    this.audioLoadTrigger$.next({ sessionId, attachment });
   }
-
 }

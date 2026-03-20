@@ -9,7 +9,6 @@ import { TooltipModule } from "primeng/tooltip";
 
 @Component({
   selector: "app-dashboard",
-  standalone: true,
   imports: [RouterLink, ButtonModule, CardModule, ChartModule, TagModule, TooltipModule],
   templateUrl: "./dashboard.component.html",
   host: { class: "flex flex-col" },

@@ -6,7 +6,6 @@ import { TagModule } from "primeng/tag";
 
 @Component({
   selector: "app-session-payment-card",
-  standalone: true,
   imports: [FormsModule, CheckboxModule, TagModule],
   templateUrl: "./session-payment-card.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,

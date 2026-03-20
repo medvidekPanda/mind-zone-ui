@@ -13,7 +13,6 @@ import { AuthStore } from "../../shared/store/auth.store";
 
 @Component({
   selector: "app-setup",
-  standalone: true,
   imports: [FormsModule, ButtonModule, InputTextModule, CardModule],
   templateUrl: "./setup.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
