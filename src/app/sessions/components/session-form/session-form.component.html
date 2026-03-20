@@ -174,7 +174,8 @@
   <!-- Main content – taby -->
   <main class="min-h-0 h-full">
     <p-tabs
-      value="notes"
+      [value]="activeTab()"
+      (valueChange)="activeTab.set('' + $event)"
       class="h-full"
     >
       <p-tablist>
@@ -216,21 +217,20 @@
         <p-tabpanel value="transcription">
           <div class="flex flex-col gap-1">
             <div class="flex items-center justify-between mb-1">
-              <label
-                for="transcription"
-                class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
-                >Přepis záznamu</label
-              >
-              <span class="text-xs text-blue-400 italic">Mock</span>
+              <label class="text-xs font-semibold text-surface-400 uppercase tracking-wide">Přepis záznamu</label>
             </div>
-            <textarea
-              pInputText
-              id="transcription"
-              [formField]="sessionForm.transcription"
-              rows="20"
-              placeholder="Přepis audio záznamu ze sezení…"
-              class="w-full resize-y font-mono text-sm leading-relaxed"
-            ></textarea>
+            @if (transcriptAttachment(); as ta) {
+              <app-transcript-viewer [transcript]="ta.transcript ?? null" />
+            } @else if (hasProcessingAttachment()) {
+              <div class="flex items-center gap-2 py-8 justify-center text-surface-400">
+                <i class="pi pi-spin pi-spinner"></i>
+                <span class="text-sm">Přepis se zpracovává…</span>
+              </div>
+            } @else {
+              <p class="text-sm text-surface-400 italic py-8 text-center">
+                Zatím žádný přepis. Nahrajte audio záznam v záložce Přílohy.
+              </p>
+            }
           </div>
         </p-tabpanel>
         <p-tabpanel value="summary">
@@ -260,6 +260,7 @@
             [pendingFiles]="pendingFiles()"
             (fileAdded)="onFileAdded($event)"
             (attachmentUploaded)="onAttachmentUploaded($event)"
+            (showTranscript)="onShowTranscript()"
           />
         </p-tabpanel>
       </p-tabpanels>

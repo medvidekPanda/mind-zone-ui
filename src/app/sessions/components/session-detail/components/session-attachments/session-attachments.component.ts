@@ -3,21 +3,24 @@ import { HttpEventType } from "@angular/common/http";
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
   inject,
   input,
   output,
+  signal,
   viewChild,
 } from "@angular/core";
-import { outputFromObservable, toSignal } from "@angular/core/rxjs-interop";
+import { outputFromObservable, toObservable, toSignal } from "@angular/core/rxjs-interop";
 
 import { ButtonDirective } from "primeng/button";
 import { Tooltip } from "primeng/tooltip";
-import { Subject, catchError, filter, firstValueFrom, map, mergeMap, of, scan, share, startWith } from "rxjs";
+import { EMPTY, Subject, catchError, distinctUntilChanged, filter, map, merge, mergeMap, of, scan, share, startWith, switchMap, tap } from "rxjs";
 
 import { SessionAttachment } from "../../../../../shared/interfaces/session.interface";
 import { SessionService } from "../../../../../shared/service/session.service";
+import { TranscriptionService } from "../../../../../shared/service/transcription.service";
 import { SessionStore } from "../../../../../shared/store/session.store";
 import { AttachmentStatusIconPipe } from "./attachment-status-icon.pipe";
 import { AttachmentStatusLabelPipe } from "./attachment-status-label.pipe";
@@ -43,13 +46,18 @@ interface UploadEvent {
 })
 export class SessionAttachmentsComponent {
   private readonly sessionService = inject(SessionService);
+  private readonly transcriptionService = inject(TranscriptionService);
   private readonly sessionStore = inject(SessionStore);
+  private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly audioUrls = signal(new Map<string, string>());
 
   readonly sessionId = input<string | null>(null);
   readonly attachments = input<SessionAttachment[]>([]);
   readonly pendingFiles = input<File[]>([]);
 
   readonly fileAdded = output<File>();
+  readonly showTranscript = output<string>();
 
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>("fileInput");
   private readonly uploadTrigger$ = new Subject<{ sessionId: string; file: File }>();
@@ -102,6 +110,47 @@ export class SessionAttachmentsComponent {
     { initialValue: new Map<string, UploadProgress>() },
   );
 
+  private readonly inProgressIds = computed(() =>
+    this.attachments()
+      .filter((a) => a.processingStatus === "queued" || a.processingStatus === "processing")
+      .map((a) => a.id),
+  );
+
+  private readonly transcriptionProgress$ = toObservable(
+    computed(() => ({ sessionId: this.sessionId(), ids: this.inProgressIds() })),
+  ).pipe(
+    distinctUntilChanged((a, b) => a.sessionId === b.sessionId && a.ids.join() === b.ids.join()),
+    switchMap(({ sessionId, ids }) => {
+      if (!sessionId || ids.length === 0) return EMPTY;
+
+      return merge(
+        ...ids.map((attachmentId) =>
+          this.transcriptionService.streamProgress(sessionId, attachmentId).pipe(
+            tap((data) =>
+              this.sessionStore.updateAttachmentStatus({
+                attachmentId,
+                status: data.status as "processing" | "completed" | "failed",
+                progress: data.progress,
+                error: data.error,
+              }),
+            ),
+            filter((data) => data.status === "completed"),
+            tap(() => this.sessionStore.loadSession(sessionId)),
+            catchError(() => EMPTY),
+          ),
+        ),
+      );
+    }),
+  );
+
+  private readonly _trackProgress = toSignal(this.transcriptionProgress$);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      for (const url of this.audioUrls().values()) URL.revokeObjectURL(url);
+    });
+  }
+
   protected readonly hasContent = computed(
     () => this.attachments().length > 0 || this.pendingFiles().length > 0 || this.uploadStates().size > 0,
   );
@@ -146,4 +195,30 @@ export class SessionAttachmentsComponent {
 
     this.sessionStore.deleteAttachment({ sessionId, attachmentId });
   }
+
+  protected retryTranscription(attachment: SessionAttachment): void {
+    const sessionId = this.sessionId();
+    if (!sessionId) return;
+
+    this.sessionStore.triggerTranscription({ sessionId, attachmentId: attachment.id });
+  }
+
+  protected viewTranscript(attachment: SessionAttachment): void {
+    this.showTranscript.emit(attachment.id);
+  }
+
+  protected isAudio(attachment: SessionAttachment): boolean {
+    return attachment.mimeType?.startsWith("audio/") ?? false;
+  }
+
+  protected loadAudioUrl(attachment: SessionAttachment): void {
+    const sessionId = this.sessionId();
+    if (!sessionId || this.audioUrls().has(attachment.id)) return;
+
+    this.sessionService.downloadAttachment(sessionId, attachment.id).subscribe((blob) => {
+      const url = URL.createObjectURL(blob);
+      this.audioUrls.update((map) => new Map(map).set(attachment.id, url));
+    });
+  }
+
 }

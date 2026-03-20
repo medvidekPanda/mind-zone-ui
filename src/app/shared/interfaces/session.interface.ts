@@ -18,7 +18,7 @@ export enum SessionStatus {
   NO_SHOW = "NO_SHOW",
 }
 
-export type AttachmentProcessingStatus = "pending" | "transcribing" | "analyzing" | "ready" | "error";
+export type AttachmentProcessingStatus = "pending" | "queued" | "processing" | "completed" | "failed";
 
 export interface SessionAttachment {
   id: string;
@@ -27,7 +27,22 @@ export interface SessionAttachment {
   mimeType: string;
   size: number;
   processingStatus?: AttachmentProcessingStatus;
-  transcript?: string;
+  processingProgress?: number;
+  processingError?: string | null;
+  transcript?: string | null;
+}
+
+export interface TranscriptSegment {
+  speaker: string;
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface Transcript {
+  segments: TranscriptSegment[];
+  language: string;
+  duration_seconds: number;
 }
 
 export interface Session {

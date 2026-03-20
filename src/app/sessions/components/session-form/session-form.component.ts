@@ -26,19 +26,12 @@ import { FormDatepickerComponent } from "../../../shared/components/form-datepic
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
 import { SessionForm, SessionPayload, SessionStatus, SessionType } from "../../../shared/interfaces/session.interface";
-import { SessionService } from "../../../shared/service/session.service";
 import { ClientStore } from "../../../shared/store/client.store";
 import { SessionStore } from "../../../shared/store/session.store";
 import { TagStore } from "../../../shared/store/tag.store";
 import { roundToNext5Min } from "../../../shared/utils/date.utils";
 import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
-
-const MOCK_TRANSCRIPTION = `Terapeut: Jak se dnes cítíte?
-Klient: Tento týden byl náročný. Měl jsem hodně práce a cítil jsem se přetížený.
-Terapeut: Můžete mi říct víc o tom přetížení? Jak se projevovalo?
-Klient: Hlavně fyzicky – bolesti hlavy, nemohl jsem usnout. A měl jsem pocit, že všechno musím zvládat sám.
-Terapeut: To téma „zvládání sám" se u vás opakuje. Vzpomínáte si, kdy jste to poprvé pocítil?
-Klient: Asi od dětství. Rodiče byli hodně zaměstnaní, takže jsem se naučil, že se nemám na koho spolehnout.`;
+import { TranscriptViewerComponent } from "./transcript-viewer.component";
 
 const MOCK_SUMMARY = `Klient přišel s pocitem přetíženosti způsobeným pracovním tlakem. Fyzické projevy zahrnovaly bolesti hlavy a poruchy spánku. Klíčovým tématem bylo přesvědčení o nutnosti zvládat vše samostatně, které klient spojuje s ranou zkušeností z dětství – rodiče byli málo dostupní, čímž se naučil nespoléhat na ostatní. Toto přesvědčení pravděpodobně přetrvává jako schema a bude vhodné ho dále explorovat.`;
 
@@ -48,7 +41,6 @@ type SessionFormModel = {
   type: SessionType | null;
   status: SessionStatus | null;
   notes: string;
-  transcription: string;
   summary: string;
   clientId: string | null;
 };
@@ -68,6 +60,7 @@ type SessionFormModel = {
     MultiSelectModule,
     TagModule,
     SessionAttachmentsComponent,
+    TranscriptViewerComponent,
     TabsModule,
     BadgeModule,
   ],
@@ -77,7 +70,6 @@ type SessionFormModel = {
 })
 export class SessionFormComponent {
   private readonly clientStore = inject(ClientStore);
-  private readonly sessionService = inject(SessionService);
   private readonly sessionStore = inject(SessionStore);
   private readonly tagStore = inject(TagStore);
 
@@ -85,13 +77,19 @@ export class SessionFormComponent {
   protected readonly pendingFiles = signal<File[]>([]);
   protected readonly attachments = computed(() => this.sessionDetail()?.attachments ?? []);
   protected readonly attachmentCount = computed(() => this.attachments().length + this.pendingFiles().length);
+  protected readonly transcriptAttachment = computed(() =>
+    this.attachments().find((a) => a.processingStatus === "completed" && a.transcript),
+  );
+  protected readonly hasProcessingAttachment = computed(() =>
+    this.attachments().some((a) => a.processingStatus === "queued" || a.processingStatus === "processing"),
+  );
+  protected readonly activeTab = signal("notes");
   private readonly sessionModel = signal<SessionFormModel>({
     date: null,
     form: null,
     type: null,
     status: SessionStatus.SCHEDULED,
     notes: "",
-    transcription: "",
     summary: "",
     clientId: null,
   });
@@ -149,7 +147,6 @@ export class SessionFormComponent {
     readonly(schemaPath.form, this.readonly);
     readonly(schemaPath.type, this.readonly);
     readonly(schemaPath.notes, this.readonly);
-    readonly(schemaPath.transcription, this.readonly);
     readonly(schemaPath.summary, this.readonly);
     readonly(schemaPath.clientId, this.readonly);
   });
@@ -212,6 +209,10 @@ export class SessionFormComponent {
     this.sessionStore.loadSession(sessionId);
   }
 
+  protected onShowTranscript(): void {
+    this.activeTab.set("transcription");
+  }
+
   private handleSaveResult(): void {
     effect(() => {
       if (!this.saving() || this.sessionStore.isLoading()) return;
@@ -252,7 +253,6 @@ export class SessionFormComponent {
         form: sForm,
         type,
         notes,
-        transcription,
         summary,
         clientId: sClientId,
         plannedDurationMinutes,
@@ -279,7 +279,6 @@ export class SessionFormComponent {
         form: sForm,
         type,
         notes: notes ?? "",
-        transcription: transcription ?? MOCK_TRANSCRIPTION,
         summary: summary ?? MOCK_SUMMARY,
         clientId: sClientId,
         status: status ?? SessionStatus.SCHEDULED,

@@ -20,53 +20,116 @@
 @if (hasContent()) {
   <div class="flex flex-col gap-2">
     @for (attachment of attachments(); track attachment.id) {
-      <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-50 border border-surface-100">
-        <i class="pi pi-file text-surface-400 text-lg shrink-0"></i>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-surface-700 truncate">{{ attachment.name }}</p>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span class="text-xs text-surface-400">{{ attachment.size | fileSize }}</span>
-            @if (attachment.processingStatus) {
-              <span
-                class="flex items-center gap-1 text-xs"
-                [class]="
-                  attachment.processingStatus === 'error'
-                    ? 'text-red-400'
-                    : attachment.processingStatus === 'ready'
-                      ? 'text-green-500'
-                      : 'text-blue-400'
-                "
-              >
-                <i
-                  class="pi text-xs"
-                  [class]="attachment.processingStatus | attachmentStatusIcon"
-                ></i>
-                {{ attachment.processingStatus | attachmentStatusLabel }}
-              </span>
-            }
+      <div class="flex flex-col gap-1 px-3 py-2.5 rounded-lg bg-surface-50 border border-surface-100">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-file text-surface-400 text-lg shrink-0"></i>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-surface-700 truncate">{{ attachment.name }}</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-xs text-surface-400">{{ attachment.size | fileSize }}</span>
+              @if (attachment.processingStatus) {
+                <span
+                  class="flex items-center gap-1 text-xs"
+                  [class]="
+                    attachment.processingStatus === 'failed'
+                      ? 'text-red-400'
+                      : attachment.processingStatus === 'completed'
+                        ? 'text-green-500'
+                        : 'text-blue-400'
+                  "
+                >
+                  <i
+                    class="pi text-xs"
+                    [class]="attachment.processingStatus | attachmentStatusIcon"
+                  ></i>
+                  {{ attachment.processingStatus | attachmentStatusLabel }}
+                </span>
+              }
+            </div>
           </div>
+
+          @if (attachment.processingStatus === 'completed' && attachment.transcript) {
+            <button
+              type="button"
+              pButton
+              icon="pi pi-file-word"
+              label="Přepis"
+              size="small"
+              text
+              (click)="viewTranscript(attachment)"
+              pTooltip="Zobrazit transkript"
+            ></button>
+          }
+
+          @if (attachment.processingStatus === 'failed') {
+            <button
+              type="button"
+              pButton
+              icon="pi pi-refresh"
+              size="small"
+              text
+              severity="warn"
+              (click)="retryTranscription(attachment)"
+              pTooltip="Zkusit znovu"
+            ></button>
+          }
+
+          <button
+            type="button"
+            pButton
+            icon="pi pi-download"
+            size="small"
+            text
+            (click)="downloadAttachment(attachment)"
+            pTooltip="Stáhnout"
+          ></button>
+
+          <button
+            type="button"
+            pButton
+            icon="pi pi-times"
+            size="small"
+            text
+            severity="danger"
+            (click)="deleteAttachment(attachment.id)"
+            pTooltip="Odebrat"
+          ></button>
         </div>
 
-        <button
-          type="button"
-          pButton
-          icon="pi pi-download"
-          size="small"
-          text
-          (click)="downloadAttachment(attachment)"
-          pTooltip="Stáhnout"
-        ></button>
+        <!-- Processing progress bar -->
+        @if (attachment.processingStatus === 'processing') {
+          <div class="flex items-center gap-2 ml-8">
+            <div class="flex-1 h-1.5 bg-surface-200 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-blue-400 rounded-full transition-all duration-300"
+                [style.width.%]="attachment.processingProgress ?? 0"
+              ></div>
+            </div>
+            <span class="text-xs text-blue-400 tabular-nums w-8 text-right">{{ attachment.processingProgress ?? 0 }}%</span>
+          </div>
+        }
 
-        <button
-          type="button"
-          pButton
-          icon="pi pi-times"
-          size="small"
-          text
-          severity="danger"
-          (click)="deleteAttachment(attachment.id)"
-          pTooltip="Odebrat"
-        ></button>
+        <!-- Error message -->
+        @if (attachment.processingStatus === 'failed' && attachment.processingError) {
+          <p class="text-xs text-red-400 ml-8">{{ attachment.processingError }}</p>
+        }
+
+        <!-- Audio player -->
+        @if (attachment.processingStatus === 'completed' && isAudio(attachment)) {
+          @if (audioUrls().get(attachment.id); as audioUrl) {
+            <audio controls class="w-full h-8 ml-8 mt-1">
+              <source [src]="audioUrl" [type]="attachment.mimeType" />
+            </audio>
+          } @else {
+            <button
+              type="button"
+              class="text-xs text-blue-400 hover:text-blue-500 ml-8 mt-1 cursor-pointer"
+              (click)="loadAudioUrl(attachment)"
+            >
+              <i class="pi pi-play mr-1"></i>Načíst přehrávač
+            </button>
+          }
+        }
       </div>
     }
 

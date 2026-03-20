@@ -1,11 +1,12 @@
-import { computed, inject } from "@angular/core";
+import { inject } from "@angular/core";
 
 import { patchState, signalStore, withMethods, withState } from "@ngrx/signals";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { catchError, mergeMap, of, pipe, switchMap, tap } from "rxjs";
 
-import { Session, SessionAttachment, SessionPayload } from "../interfaces/session.interface";
+import { AttachmentProcessingStatus, Session, SessionAttachment, SessionPayload } from "../interfaces/session.interface";
 import { SessionService } from "../service/session.service";
+import { TranscriptionService } from "../service/transcription.service";
 
 type SessionState = {
   sessions: Session[];
@@ -25,7 +26,7 @@ export const SessionStore = signalStore(
   { providedIn: "root" },
   withState(initialState),
 
-  withMethods((store, sessionService = inject(SessionService)) => ({
+  withMethods((store, sessionService = inject(SessionService), transcriptionService = inject(TranscriptionService)) => ({
     loadAll: rxMethod<{ from?: string; to?: string; userId?: string } | void>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
@@ -137,6 +138,53 @@ export const SessionStore = signalStore(
                   session: { ...session, attachments: session.attachments.filter((a) => a.id !== attachmentId) },
                 });
               }
+            }),
+            catchError((error) => {
+              patchState(store, { error: error.message });
+              return of(null);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    updateAttachmentStatus(update: {
+      attachmentId: string;
+      status: AttachmentProcessingStatus;
+      progress?: number;
+      error?: string | null;
+      transcript?: string | null;
+    }): void {
+      const session = store.session();
+      if (!session) return;
+
+      const attachments = session.attachments.map((a) =>
+        a.id === update.attachmentId
+          ? {
+              ...a,
+              processingStatus: update.status,
+              processingProgress: update.progress ?? a.processingProgress,
+              processingError: update.error !== undefined ? update.error : a.processingError,
+              transcript: update.transcript !== undefined ? update.transcript : a.transcript,
+            }
+          : a,
+      );
+
+      patchState(store, { session: { ...session, attachments } });
+    },
+
+    triggerTranscription: rxMethod<{ sessionId: string; attachmentId: string; language?: string }>(
+      pipe(
+        switchMap(({ sessionId, attachmentId, language }) =>
+          transcriptionService.triggerTranscription(sessionId, attachmentId, language).pipe(
+            tap(() => {
+              const session = store.session();
+              if (!session) return;
+
+              const attachments = session.attachments.map((a) =>
+                a.id === attachmentId ? { ...a, processingStatus: "queued" as const, processingProgress: 0, processingError: null } : a,
+              );
+              patchState(store, { session: { ...session, attachments } });
             }),
             catchError((error) => {
               patchState(store, { error: error.message });

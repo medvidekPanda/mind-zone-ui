@@ -4,14 +4,14 @@ import { Pipe, PipeTransform } from "@angular/core";
 export class AttachmentStatusIconPipe implements PipeTransform {
   transform(status?: string): string {
     switch (status) {
-      case "ready":
+      case "completed":
         return "pi-check-circle";
-      case "transcribing":
+      case "processing":
         return "pi-spin pi-spinner";
-      case "analyzing":
-        return "pi-spin pi-spinner";
-      case "error":
+      case "failed":
         return "pi-exclamation-circle";
+      case "queued":
+      case "pending":
       default:
         return "pi-clock";
     }

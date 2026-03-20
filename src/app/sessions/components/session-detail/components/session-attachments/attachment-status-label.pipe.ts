@@ -4,14 +4,15 @@ import { Pipe, PipeTransform } from "@angular/core";
 export class AttachmentStatusLabelPipe implements PipeTransform {
   transform(status?: string): string {
     switch (status) {
-      case "ready":
-        return "Připraveno";
-      case "transcribing":
+      case "completed":
+        return "Přepis dokončen";
+      case "processing":
         return "Přepisuje se...";
-      case "analyzing":
-        return "Analyzuje se...";
-      case "error":
+      case "queued":
+        return "Ve frontě...";
+      case "failed":
         return "Chyba zpracování";
+      case "pending":
       default:
         return "Čeká na zpracování";
     }
