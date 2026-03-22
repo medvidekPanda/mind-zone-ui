@@ -1,0 +1,5 @@
+# Docker Registry Configuration
+# Copy this file to .build-config and set your registry URL
+# Example: ghcr.io/your-username or registry.digitalocean.com/your-project
+
+export DOCKER_REGISTRY="ghcr.io/your-username"

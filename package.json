@@ -1,13 +1,16 @@
 {
   "name": "mind-zone-ui",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:dev": "ng build --configuration dev",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:mind-zone-ui": "node dist/mind-zone-ui/server/server.mjs"
+    "serve:ssr:mind-zone-ui": "node dist/mind-zone-ui/server/server.mjs",
+    "proxy": "tsx proxy/proxy-server.mts",
+    "start:dev": "ng build --configuration dev && tsx proxy/proxy-server.mts"
   },
   "private": true,
   "packageManager": "npm@10.9.4",
@@ -25,8 +28,10 @@
     "@ngrx/signals": "^21.0.1",
     "@primeuix/themes": "^2.0.3",
     "chart.js": "^4.5.1",
+    "compression": "^1.8.1",
     "express": "^5.1.0",
     "firebase": "^11.10.0",
+    "http-proxy-middleware": "^3.0.5",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.1",
     "rxjs": "~7.8.0",
@@ -38,6 +43,7 @@
     "@angular/compiler-cli": "^21.2.3",
     "@tailwindcss/postcss": "^4.1.12",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/compression": "^1.8.1",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
     "jsdom": "^28.0.0",
@@ -45,6 +51,7 @@
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.12",
     "tailwindcss-primeui": "^0.6.1",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }

@@ -5,24 +5,27 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
+const API_URL = process.env['API_URL'] || 'http://localhost:3001';
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Proxy /api requests to the backend.
+ * During SSR, Angular HttpClient sends relative /api calls to this server,
+ * so they need to be forwarded to the actual API backend.
  */
+app.use(
+  createProxyMiddleware({
+    target: API_URL,
+    changeOrigin: true,
+    pathFilter: '/api',
+  }),
+);
 
 /**
  * Serve static files from /browser
