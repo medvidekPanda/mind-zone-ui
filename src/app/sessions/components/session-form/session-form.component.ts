@@ -9,21 +9,19 @@ import {
   output,
   signal,
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { FormField, form, readonly, required } from "@angular/forms/signals";
+import { FormField, FormRoot, form, readonly, required } from "@angular/forms/signals";
 
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
-import { CheckboxModule } from "primeng/checkbox";
-import { DatePickerModule } from "primeng/datepicker";
-import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextModule } from "primeng/inputtext";
-import { MultiSelectModule } from "primeng/multiselect";
 import { TabsModule } from "primeng/tabs";
 import { TagModule } from "primeng/tag";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
+import { FormInputNumberComponent } from "../../../shared/components/form-input-number/form-input-number.component";
+import { FormMultiSelectComponent } from "../../../shared/components/form-multi-select/form-multi-select.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
+import { FormTimepickerComponent } from "../../../shared/components/form-timepicker/form-timepicker.component";
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
 import { SessionForm, SessionPayload, SessionStatus, SessionType } from "../../../shared/interfaces/session.interface";
 import { ClientStore } from "../../../shared/store/client.store";
@@ -31,7 +29,7 @@ import { SessionStore } from "../../../shared/store/session.store";
 import { TagStore } from "../../../shared/store/tag.store";
 import { roundToNext5Min } from "../../../shared/utils/date.utils";
 import { SessionAttachmentsComponent } from "../session-detail/components/session-attachments/session-attachments.component";
-import { TranscriptViewerComponent } from "./transcript-viewer.component";
+import { SessionTranscriptViewerComponent } from "../session-transcript-viewer/session-transcript-viewer.component";
 
 type SessionFormModel = {
   date: string | null;
@@ -41,29 +39,33 @@ type SessionFormModel = {
   notes: string;
   summary: string;
   clientId: string | null;
+  startTime: Date | null;
+  endTime: Date | null;
+  tags: string[];
+  price: number | null;
+  paid: boolean;
 };
 
 @Component({
   selector: "app-session-form",
   imports: [
     ButtonModule,
-    FormsModule,
     FormField,
+    FormRoot,
     FormDatepickerComponent,
+    FormInputNumberComponent,
+    FormMultiSelectComponent,
     FormSelectComponent,
+    FormTimepickerComponent,
     InputTextModule,
-    InputNumberModule,
-    DatePickerModule,
-    CheckboxModule,
-    MultiSelectModule,
     TagModule,
     SessionAttachmentsComponent,
-    TranscriptViewerComponent,
+    SessionTranscriptViewerComponent,
     TabsModule,
     BadgeModule,
   ],
   templateUrl: "./session-form.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionFormComponent {
@@ -90,6 +92,11 @@ export class SessionFormComponent {
     notes: "",
     summary: "",
     clientId: null,
+    startTime: roundToNext5Min(new Date()),
+    endTime: null,
+    tags: [],
+    price: null,
+    paid: false,
   });
 
   protected readonly sessionDetail = computed(() => this.sessionStore.session());
@@ -99,10 +106,6 @@ export class SessionFormComponent {
   readonly readonly = input<boolean>(false);
   readonly showActions = input<boolean>(false);
 
-  readonly startTime = model<Date | null>(roundToNext5Min(new Date()));
-  readonly endTime = model<Date | null>(null);
-  readonly tags = model<string[]>([]);
-  readonly price = model<number | null>(null);
   readonly paid = model<boolean>(false);
 
   readonly saved = output<void>();
@@ -121,8 +124,8 @@ export class SessionFormComponent {
   });
 
   protected readonly duration = computed(() => {
-    const start = this.startTime();
-    const end = this.endTime();
+    const start = this.sessionForm.startTime().value();
+    const end = this.sessionForm.endTime().value();
     if (!start || !end) return null;
     const diffMs = end.getTime() - start.getTime();
     const diffMin = Math.round(diffMs / 60000);
@@ -136,18 +139,35 @@ export class SessionFormComponent {
     this.tagStore.tags().map((tag) => ({ label: tag.name, value: tag.id })),
   );
 
-  protected readonly sessionForm = form(this.sessionModel, (schemaPath) => {
-    required(schemaPath.date, { message: "Datum je povinné" });
-    required(schemaPath.form, { message: "Forma je povinná" });
-    required(schemaPath.type, { message: "Typ je povinný" });
+  protected readonly sessionForm = form(
+    this.sessionModel,
+    (schemaPath) => {
+      required(schemaPath.clientId, { message: "Klient je povinný" });
+      required(schemaPath.date, { message: "Datum je povinné" });
+      required(schemaPath.form, { message: "Forma je povinná" });
+      required(schemaPath.type, { message: "Typ je povinný" });
+      required(schemaPath.startTime, { message: "Začátek je povinný" });
 
-    readonly(schemaPath.date, this.readonly);
-    readonly(schemaPath.form, this.readonly);
-    readonly(schemaPath.type, this.readonly);
-    readonly(schemaPath.notes, this.readonly);
-    readonly(schemaPath.summary, this.readonly);
-    readonly(schemaPath.clientId, this.readonly);
-  });
+      readonly(schemaPath.date, this.readonly);
+      readonly(schemaPath.form, this.readonly);
+      readonly(schemaPath.type, this.readonly);
+      readonly(schemaPath.notes, this.readonly);
+      readonly(schemaPath.summary, this.readonly);
+      readonly(schemaPath.clientId, this.readonly);
+      readonly(schemaPath.startTime, this.readonly);
+      readonly(schemaPath.endTime, this.readonly);
+      readonly(schemaPath.tags, this.readonly);
+      readonly(schemaPath.price, this.readonly);
+      readonly(schemaPath.paid, this.readonly);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.performSave();
+        },
+      },
+    },
+  );
 
   constructor() {
     this.clientStore.loadAll();
@@ -156,25 +176,17 @@ export class SessionFormComponent {
     this.handleSaveResult();
   }
 
-  protected save(): void {
-    const currentForm = this.sessionForm();
-    if (!currentForm.valid()) return;
+  private performSave(): void {
+    const formValue = this.sessionForm().value() as SessionFormModel;
+    if (!formValue.form || !formValue.type || !formValue.date || !formValue.startTime) return;
 
-    const formValue = currentForm.value() as SessionFormModel;
-    if (!formValue.form || !formValue.type || !formValue.date) return;
+    const endTime = formValue.endTime ?? new Date();
+    const diffMs = endTime.getTime() - formValue.startTime.getTime();
+    const plannedDurationMinutes = Math.max(1, Math.round(diffMs / 60000));
 
-    const plannedDurationMinutes = this.duration();
-    if (!plannedDurationMinutes) return;
-
-    const startTime = this.startTime();
-    let combinedDateStr = formValue.date; // YYYY-MM-DD
-    if (startTime) {
-      const hours = String(startTime.getHours()).padStart(2, "0");
-      const minutes = String(startTime.getMinutes()).padStart(2, "0");
-      combinedDateStr = `${formValue.date}T${hours}:${minutes}:00.000Z`; // Manual says ISO 8601
-      // Actually we should handle local timezone correctly if it's meant to be local, but ISO 8601 usually implies Z or offset.
-      // The manual says: "2026-03-18T17:00:00.000Z"
-    }
+    const hours = String(formValue.startTime.getHours()).padStart(2, "0");
+    const minutes = String(formValue.startTime.getMinutes()).padStart(2, "0");
+    const combinedDateStr = `${formValue.date}T${hours}:${minutes}:00.000Z`;
 
     const payload: SessionPayload = {
       date: combinedDateStr,
@@ -184,9 +196,9 @@ export class SessionFormComponent {
       plannedDurationMinutes,
       notes: formValue.notes ?? "",
       clientId: formValue.clientId ?? "",
-      tagIds: this.tags(),
-      price: this.price() ?? 0,
-      paid: this.paid(),
+      tagIds: formValue.tags,
+      price: formValue.price ?? 0,
+      paid: formValue.paid,
     };
 
     this.saving.set(true);
@@ -260,17 +272,20 @@ export class SessionFormComponent {
         status,
       } = session;
 
-      // Parse combinedDate (ISO 8601) back into date (YYYY-MM-DD) and startTime (Date)
       let formattedDate = combinedDate;
+      let startTime: Date | null = null;
+      let endTime: Date | null = null;
       if (combinedDate.includes("T")) {
         const parsedDate = new Date(combinedDate);
         formattedDate = parsedDate.toISOString().split("T")[0];
-        this.startTime.set(parsedDate);
-
+        startTime = parsedDate;
         if (plannedDurationMinutes) {
-          this.endTime.set(new Date(parsedDate.getTime() + plannedDurationMinutes * 60000));
+          endTime = new Date(parsedDate.getTime() + plannedDurationMinutes * 60000);
         }
       }
+
+      const parsedPrice = typeof price === "string" ? parseInt(price, 10) : (price ?? null);
+      const tagIds = sTags?.map((t) => t.id) ?? [];
 
       this.sessionModel.set({
         date: formattedDate,
@@ -280,13 +295,13 @@ export class SessionFormComponent {
         summary: summary ?? "",
         clientId: sClientId,
         status: status ?? SessionStatus.SCHEDULED,
+        startTime,
+        endTime,
+        tags: tagIds,
+        price: parsedPrice,
+        paid: paid ?? false,
       });
 
-      const tagIds = sTags?.map((t) => t.id) ?? [];
-      this.tags.set(tagIds);
-
-      const parsedPrice = typeof price === "string" ? parseInt(price, 10) : (price ?? null);
-      this.price.set(parsedPrice);
       this.paid.set(paid ?? false);
     });
   }

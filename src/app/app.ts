@@ -8,6 +8,7 @@ import { ButtonModule } from "primeng/button";
 import { MenuModule } from "primeng/menu";
 import { MenubarModule } from "primeng/menubar";
 
+import { environment } from "../environments/environment";
 import { AuthService } from "./shared/service/auth.service";
 import { AuthStore } from "./shared/store/auth.store";
 import { ClientStore } from "./shared/store/client.store";
@@ -21,6 +22,8 @@ import { UserStore } from "./shared/store/user.store";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  protected readonly version = environment.version;
+
   private readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
