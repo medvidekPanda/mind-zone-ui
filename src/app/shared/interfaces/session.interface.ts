@@ -29,7 +29,7 @@ export interface SessionAttachment {
   processingStatus?: AttachmentProcessingStatus;
   processingProgress?: number;
   processingError?: string | null;
-  transcript?: string | null;
+  transcript?: Transcript | null;
 }
 
 export interface TranscriptSegment {

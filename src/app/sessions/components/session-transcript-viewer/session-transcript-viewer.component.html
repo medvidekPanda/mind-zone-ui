@@ -1,15 +1,17 @@
-@if (parsedTranscript(); as t) {
+@let _transcript = transcript();
+
+@if (_transcript) {
   <div class="flex items-center gap-3 mb-4 text-xs text-surface-400">
     <span
-      >Jazyk: <strong class="text-surface-600">{{ t.language }}</strong></span
+      >Jazyk: <strong class="text-surface-600">{{ _transcript.language }}</strong></span
     >
     <span
-      >Délka: <strong class="text-surface-600">{{ formatTime(t.duration_seconds) }}</strong></span
+      >Délka: <strong class="text-surface-600">{{ formatTime(_transcript.duration_seconds) }}</strong></span
     >
   </div>
 
   <div class="flex flex-col gap-3">
-    @for (segment of t.segments; track segment.start) {
+    @for (segment of _transcript.segments; track segment.start) {
       <div class="flex gap-3">
         <div class="shrink-0 w-24 text-right pt-1">
           <span

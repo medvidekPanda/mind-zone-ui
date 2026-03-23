@@ -11,21 +11,10 @@ const SPEAKER_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "
   host: { class: "flex flex-1 flex-col overflow-y-auto" },
 })
 export class SessionTranscriptViewerComponent {
-  readonly transcript = input<string | null>(null);
-
-  protected readonly parsedTranscript = computed<Transcript | null>(() => {
-    const raw = this.transcript();
-    if (!raw) return null;
-
-    try {
-      return JSON.parse(raw) as Transcript;
-    } catch {
-      return null;
-    }
-  });
+  readonly transcript = input<Transcript | null>(null);
 
   protected readonly speakerColors = computed(() => {
-    const transcript = this.parsedTranscript();
+    const transcript = this.transcript();
     if (!transcript) return new Map<string, string>();
 
     const speakers = [...new Set(transcript.segments.map((speaker) => speaker.speaker))];

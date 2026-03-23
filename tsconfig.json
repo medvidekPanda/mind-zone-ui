@@ -14,7 +14,8 @@
     "importHelpers": true,
     "target": "ES2024",
     "module": "preserve",
-    "lib": ["ES2024", "dom"]
+    "lib": ["ES2024", "dom"],
+    "resolveJsonModule": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
