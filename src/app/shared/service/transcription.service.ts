@@ -33,11 +33,19 @@ export class TranscriptionService {
     );
   }
 
-  triggerTranscription(sessionId: string, attachmentId: string, language = "cs"): Observable<void> {
+  triggerTranscription(
+    sessionId: string,
+    attachmentId: string,
+    options?: { language?: string; minSpeakers?: number; maxSpeakers?: number },
+  ): Observable<void> {
+    const params: Record<string, string> = { language: options?.language ?? "cs" };
+    if (options?.minSpeakers != null) params["min_speakers"] = String(options.minSpeakers);
+    if (options?.maxSpeakers != null) params["max_speakers"] = String(options.maxSpeakers);
+
     return this.http.post<void>(
       `${this.apiUrl}/sessions/${sessionId}/attachments/${attachmentId}/transcribe`,
       null,
-      { params: { language } },
+      { params },
     );
   }
 

@@ -61,16 +61,16 @@
             ></button>
           }
 
-          @if (attachment.processingStatus === 'failed') {
+          @if (attachment.processingStatus !== 'queued' && attachment.processingStatus !== 'processing') {
             <button
               type="button"
               pButton
-              icon="pi pi-refresh"
+              icon="pi pi-microphone"
               size="small"
               text
-              severity="warn"
-              (click)="retryTranscription(attachment)"
-              pTooltip="Zkusit znovu"
+              [severity]="attachment.processingStatus === 'failed' ? 'warn' : 'secondary'"
+              (click)="requestTranscription(attachment)"
+              [pTooltip]="attachment.processingStatus === 'failed' ? 'Zkusit znovu' : 'Spustit přepis'"
             ></button>
           }
 
@@ -173,3 +173,13 @@
     }
   </div>
 }
+
+<app-session-upload-dialog
+  #uploadDialog
+  (confirm)="onUploadConfirm($event)"
+/>
+
+<app-session-transcribe-dialog
+  #transcribeDialog
+  (confirm)="onTranscribeConfirm($event)"
+/>

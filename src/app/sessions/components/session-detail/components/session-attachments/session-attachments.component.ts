@@ -34,9 +34,11 @@ import {
 } from "rxjs";
 
 import { SessionAttachment } from "../../../../../shared/interfaces/session.interface";
-import { SessionService } from "../../../../../shared/service/session.service";
+import { AttachmentUploadOptions, SessionService } from "../../../../../shared/service/session.service";
 import { TranscriptionService } from "../../../../../shared/service/transcription.service";
 import { SessionStore } from "../../../../../shared/store/session.store";
+import { SessionTranscribeDialogComponent, TranscribeConfig } from "../session-transcribe-dialog/session-transcribe-dialog.component";
+import { SessionUploadDialogComponent, UploadConfig } from "../session-upload-dialog/session-upload-dialog.component";
 import { AttachmentStatusIconPipe } from "./attachment-status-icon.pipe";
 import { AttachmentStatusLabelPipe } from "./attachment-status-label.pipe";
 import { FileSizePipe } from "./file-size.pipe";
@@ -51,11 +53,12 @@ interface UploadEvent {
   fileName: string;
   percent?: number;
   sessionId?: string;
+  attachmentId?: string;
 }
 
 @Component({
   selector: "app-session-attachments",
-  imports: [ButtonDirective, Tooltip, KeyValuePipe, AttachmentStatusIconPipe, AttachmentStatusLabelPipe, FileSizePipe],
+  imports: [ButtonDirective, Tooltip, KeyValuePipe, AttachmentStatusIconPipe, AttachmentStatusLabelPipe, FileSizePipe, SessionTranscribeDialogComponent, SessionUploadDialogComponent],
   templateUrl: "./session-attachments.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -66,6 +69,8 @@ export class SessionAttachmentsComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly audioUrls = signal(new Map<string, string>());
+  protected readonly uploadDialog = viewChild<SessionUploadDialogComponent>("uploadDialog");
+  protected readonly transcribeDialog = viewChild<SessionTranscribeDialogComponent>("transcribeDialog");
 
   readonly sessionId = input<string | null>(null);
   readonly attachments = input<SessionAttachment[]>([]);
@@ -78,18 +83,18 @@ export class SessionAttachmentsComponent {
   private readonly downloadTrigger$ = new Subject<{ sessionId: string; attachment: SessionAttachment }>();
   private readonly audioLoadTrigger$ = new Subject<{ sessionId: string; attachment: SessionAttachment }>();
 
-  private readonly uploadTrigger$ = new Subject<{ sessionId: string; file: File }>();
+  private readonly uploadTrigger$ = new Subject<{ sessionId: string; file: File; options: AttachmentUploadOptions }>();
 
   private readonly uploadEvents$ = this.uploadTrigger$.pipe(
-    mergeMap(({ sessionId, file }) =>
-      this.sessionService.uploadAttachmentWithProgress(sessionId, file).pipe(
+    mergeMap(({ sessionId, file, options }) =>
+      this.sessionService.uploadAttachmentWithProgress(sessionId, file, options).pipe(
         map((event): UploadEvent | null => {
           if (event.type === HttpEventType.UploadProgress) {
             const percent = event.total ? Math.round((event.loaded / event.total) * 100) : 0;
             return { type: "progress", fileName: file.name, percent };
           }
           if (event.type === HttpEventType.Response) {
-            return { type: "complete", fileName: file.name, sessionId };
+            return { type: "complete", fileName: file.name, sessionId, attachmentId: event.body?.id };
           }
           return null;
         }),
@@ -215,15 +220,31 @@ export class SessionAttachmentsComponent {
     const files = Array.from(input.files ?? []);
     input.value = "";
 
-    for (const file of files) {
-      const sessionId = this.sessionId();
+    if (files.length === 0) return;
 
-      if (sessionId) {
-        this.uploadTrigger$.next({ sessionId, file });
-      } else {
+    const sessionId = this.sessionId();
+    if (sessionId) {
+      this.uploadDialog()?.open(files[0]);
+    } else {
+      for (const file of files) {
         this.fileAdded.emit(file);
       }
     }
+  }
+
+  protected onUploadConfirm(config: UploadConfig): void {
+    const sessionId = this.sessionId();
+    if (!sessionId) return;
+
+    this.uploadTrigger$.next({
+      sessionId,
+      file: config.file,
+      options: {
+        transcribe: config.transcribe,
+        minSpeakers: config.speakerCount,
+        maxSpeakers: config.speakerCount,
+      },
+    });
   }
 
   protected downloadAttachment(attachment: SessionAttachment): void {
@@ -240,11 +261,22 @@ export class SessionAttachmentsComponent {
     this.sessionStore.deleteAttachment({ sessionId, attachmentId });
   }
 
-  protected retryTranscription(attachment: SessionAttachment): void {
+
+
+  protected requestTranscription(attachment: SessionAttachment): void {
+    this.transcribeDialog()?.open(attachment.id, attachment.name);
+  }
+
+  protected onTranscribeConfirm(config: TranscribeConfig): void {
     const sessionId = this.sessionId();
     if (!sessionId) return;
 
-    this.sessionStore.triggerTranscription({ sessionId, attachmentId: attachment.id });
+    this.sessionStore.triggerTranscription({
+      sessionId,
+      attachmentId: config.attachmentId,
+      minSpeakers: config.speakerCount,
+      maxSpeakers: config.speakerCount,
+    });
   }
 
   protected viewTranscript(attachment: SessionAttachment): void {

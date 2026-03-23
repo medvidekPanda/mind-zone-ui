@@ -6,6 +6,12 @@ import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { Session, SessionAttachment, SessionPayload } from "../interfaces/session.interface";
 
+export interface AttachmentUploadOptions {
+  transcribe: boolean;
+  minSpeakers: number;
+  maxSpeakers: number;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -33,20 +39,34 @@ export class SessionService {
     return this.http.delete<void>(`${this.apiUrl}/sessions/${id}`);
   }
 
-  uploadAttachment(sessionId: string, file: File): Observable<SessionAttachment> {
-    const formData = new FormData();
-    formData.append("file", file);
-    return this.http.post<SessionAttachment>(`${this.apiUrl}/sessions/${sessionId}/attachments`, formData);
+  uploadAttachment(sessionId: string, file: File, options?: AttachmentUploadOptions): Observable<SessionAttachment> {
+    return this.http.post<SessionAttachment>(
+      `${this.apiUrl}/sessions/${sessionId}/attachments`,
+      this.buildUploadFormData(file, options),
+    );
   }
 
-  uploadAttachmentWithProgress(sessionId: string, file: File): Observable<HttpEvent<SessionAttachment>> {
+  uploadAttachmentWithProgress(
+    sessionId: string,
+    file: File,
+    options?: AttachmentUploadOptions,
+  ): Observable<HttpEvent<SessionAttachment>> {
+    return this.http.post<SessionAttachment>(
+      `${this.apiUrl}/sessions/${sessionId}/attachments`,
+      this.buildUploadFormData(file, options),
+      { reportProgress: true, observe: "events" },
+    );
+  }
+
+  private buildUploadFormData(file: File, options?: AttachmentUploadOptions): FormData {
     const formData = new FormData();
     formData.append("file", file);
-
-    return this.http.post<SessionAttachment>(`${this.apiUrl}/sessions/${sessionId}/attachments`, formData, {
-      reportProgress: true,
-      observe: "events",
-    });
+    if (options) {
+      formData.append("transcribe", String(options.transcribe));
+      formData.append("min_speakers", String(options.minSpeakers));
+      formData.append("max_speakers", String(options.maxSpeakers));
+    }
+    return formData;
   }
 
   downloadAttachment(sessionId: string, attachmentId: string): Observable<Blob> {

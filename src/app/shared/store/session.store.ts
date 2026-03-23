@@ -173,10 +173,16 @@ export const SessionStore = signalStore(
       patchState(store, { session: { ...session, attachments } });
     },
 
-    triggerTranscription: rxMethod<{ sessionId: string; attachmentId: string; language?: string }>(
+    triggerTranscription: rxMethod<{
+      sessionId: string;
+      attachmentId: string;
+      language?: string;
+      minSpeakers?: number;
+      maxSpeakers?: number;
+    }>(
       pipe(
-        switchMap(({ sessionId, attachmentId, language }) =>
-          transcriptionService.triggerTranscription(sessionId, attachmentId, language).pipe(
+        switchMap(({ sessionId, attachmentId, language, minSpeakers, maxSpeakers }) =>
+          transcriptionService.triggerTranscription(sessionId, attachmentId, { language, minSpeakers, maxSpeakers }).pipe(
             tap(() => {
               const session = store.session();
               if (!session) return;
