@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, model, output, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { FormField, FormRoot, form } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
-import { CheckboxModule } from "primeng/checkbox";
 import { DialogModule } from "primeng/dialog";
-import { InputNumberModule } from "primeng/inputnumber";
+
+import { FormCheckboxComponent } from "../../../../../shared/components/form-checkbox/form-checkbox.component";
+import { FormInputNumberComponent } from "../../../../../shared/components/form-input-number/form-input-number.component";
 
 export interface UploadConfig {
   file: File;
@@ -12,9 +13,14 @@ export interface UploadConfig {
   speakerCount: number;
 }
 
+type UploadFormModel = {
+  speakerCount: number;
+  transcribe: boolean;
+};
+
 @Component({
   selector: "app-session-upload-dialog",
-  imports: [FormsModule, DialogModule, ButtonModule, InputNumberModule, CheckboxModule],
+  imports: [DialogModule, ButtonModule, FormRoot, FormField, FormInputNumberComponent, FormCheckboxComponent],
   templateUrl: "./session-upload-dialog.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,13 +29,17 @@ export class SessionUploadDialogComponent {
   readonly confirm = output<UploadConfig>();
 
   protected readonly file = signal<File | null>(null);
-  protected readonly speakerCount = signal(2);
-  protected readonly transcribe = signal(true);
+
+  private readonly uploadModel = signal<UploadFormModel>({
+    speakerCount: 2,
+    transcribe: true,
+  });
+
+  protected readonly uploadForm = form(this.uploadModel);
 
   open(file: File): void {
     this.file.set(file);
-    this.speakerCount.set(2);
-    this.transcribe.set(true);
+    this.uploadModel.set({ speakerCount: 2, transcribe: true });
     this.visible.set(true);
   }
 
@@ -42,10 +52,11 @@ export class SessionUploadDialogComponent {
     const file = this.file();
     if (!file) return;
 
+    const value = this.uploadForm().value() as UploadFormModel;
     this.confirm.emit({
       file,
-      transcribe: this.transcribe(),
-      speakerCount: this.speakerCount(),
+      transcribe: value.transcribe,
+      speakerCount: value.speakerCount,
     });
     this.close();
   }

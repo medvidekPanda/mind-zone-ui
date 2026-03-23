@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
-import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 
+import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
 import { CLIENT_STATUS_OPTIONS } from "../shared/constants/client.constants";
 import { ClientStatus } from "../shared/interfaces/client.interface";
 import { AppStore } from "../shared/store/app.store";
@@ -19,14 +18,13 @@ import { ClientStore } from "../shared/store/client.store";
   selector: "app-clients-list",
   imports: [
     RouterLink,
-    FormsModule,
     ButtonModule,
     TableModule,
     InputTextModule,
-    SelectModule,
     TagModule,
     IconFieldModule,
     InputIconModule,
+    FormSelectComponent,
   ],
   templateUrl: "./clients-list.component.html",
   host: { class: "flex flex-col h-full" },

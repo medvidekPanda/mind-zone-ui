@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
-import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
+
+import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
 
 import { UserRole } from "../shared/interfaces/user.interface";
 import { UserStore } from "../shared/store/user.store";
@@ -18,15 +18,14 @@ import { UserStore } from "../shared/store/user.store";
   selector: "app-users-list",
   imports: [
     RouterLink,
-    FormsModule,
     ButtonModule,
     TableModule,
     InputTextModule,
-    SelectModule,
     TagModule,
     IconFieldModule,
     InputIconModule,
     TooltipModule,
+    FormSelectComponent,
   ],
   templateUrl: "./users-list.component.html",
   host: { class: "flex flex-col h-full" },

@@ -1,16 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
 import { IconFieldModule } from "primeng/iconfield";
 import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
-import { SelectModule } from "primeng/select";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
+import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
 import { SESSION_FORM_OPTIONS } from "../shared/constants/session.constants";
 import { AppStore } from "../shared/store/app.store";
 import { SessionStore } from "../shared/store/session.store";
@@ -30,7 +29,6 @@ interface SessionRow {
   selector: "app-sessions-list",
   imports: [
     RouterLink,
-    FormsModule,
     ButtonModule,
     TableModule,
     TagModule,
@@ -38,7 +36,7 @@ interface SessionRow {
     IconFieldModule,
     InputIconModule,
     InputTextModule,
-    SelectModule,
+    FormSelectComponent,
   ],
   templateUrl: "./sessions-list.component.html",
   host: { class: "flex flex-col h-full" },

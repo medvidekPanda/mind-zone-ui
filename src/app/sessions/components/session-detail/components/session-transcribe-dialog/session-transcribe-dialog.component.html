@@ -7,7 +7,7 @@
   [resizable]="false"
   styleClass="w-full max-w-sm"
 >
-  <div class="flex flex-col gap-4 pt-1">
+  <form [formRoot]="transcribeForm" class="flex flex-col gap-4 pt-1">
     <p class="text-sm text-surface-500 m-0">
       {{ attachmentName() }}
     </p>
@@ -18,21 +18,19 @@
         class="text-xs font-semibold text-surface-400 uppercase tracking-wide"
         >Počet mluvčích</label
       >
-      <p-inputNumber
+      <app-form-input-number
         id="dlg-speakers"
-        [ngModel]="speakerCount()"
-        (ngModelChange)="speakerCount.set($event)"
-        [min]="1"
-        [max]="20"
+        [formField]="transcribeForm.speakerCount"
+        [minValue]="1"
+        [maxValue]="20"
         [showButtons]="true"
         buttonLayout="horizontal"
         incrementButtonIcon="pi pi-plus"
         decrementButtonIcon="pi pi-minus"
-        class="w-full"
       />
       <span class="text-xs text-surface-400">Pro terapeutické sezení obvykle 2</span>
     </div>
-  </div>
+  </form>
 
   <ng-template pTemplate="footer">
     <p-button

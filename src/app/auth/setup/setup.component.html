@@ -7,24 +7,20 @@
       </div>
     </ng-template>
 
-    <form (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+    <form [formRoot]="setupForm" class="flex flex-col gap-4">
       <input
         pInputText
         type="text"
-        [(ngModel)]="firstName"
-        name="firstName"
+        [formField]="setupForm.firstName"
         placeholder="Jméno"
         class="w-full"
-        required
       />
       <input
         pInputText
         type="text"
-        [(ngModel)]="lastName"
-        name="lastName"
+        [formField]="setupForm.lastName"
         placeholder="Příjmení"
         class="w-full"
-        required
       />
       @if (error()) {
         <p class="text-red-500 text-sm">{{ error() }}</p>

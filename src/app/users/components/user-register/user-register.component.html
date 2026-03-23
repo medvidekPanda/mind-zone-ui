@@ -3,18 +3,18 @@
 </app-page-header>
 
 <p-card>
-  <form class="flex flex-col gap-4 max-w-md">
+  <form [formRoot]="registerForm" class="flex flex-col gap-4 max-w-md">
     <div class="flex flex-col gap-2">
       <label for="firebaseId">Firebase ID</label>
-      <input pInputText id="firebaseId" [(ngModel)]="firebaseId" name="firebaseId" class="w-full" />
+      <input pInputText id="firebaseId" [formField]="registerForm.firebaseId" class="w-full" />
     </div>
     <div class="flex flex-col gap-2">
       <label for="firstName">Jméno</label>
-      <input pInputText id="firstName" [(ngModel)]="firstName" name="firstName" class="w-full" />
+      <input pInputText id="firstName" [formField]="registerForm.firstName" class="w-full" />
     </div>
     <div class="flex flex-col gap-2">
       <label for="lastName">Příjmení</label>
-      <input pInputText id="lastName" [(ngModel)]="lastName" name="lastName" class="w-full" />
+      <input pInputText id="lastName" [formField]="registerForm.lastName" class="w-full" />
     </div>
     <div class="flex gap-2">
       <button type="button" pButton label="Uložit" icon="pi pi-check" (click)="save()"></button>

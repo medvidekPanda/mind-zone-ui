@@ -14,13 +14,11 @@
         />
       </div>
       <div class="flex items-center gap-2">
-        <p-checkbox
-          [ngModel]="paid()"
-          (ngModelChange)="paid.set($event)"
-          [binary]="true"
+        <app-form-checkbox
+          [(value)]="paid"
           inputId="paidSidebar"
           [disabled]="!editable()"
-        ></p-checkbox>
+        />
         <label
           for="paidSidebar"
           class="text-sm text-surface-700"

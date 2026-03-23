@@ -111,45 +111,33 @@
           class="!bg-slate-100 !border-0 px-6 py-2"
           style="min-width: 130px"
         >
-          <p-select
+          <app-form-select
             [options]="durationOptions"
-            [ngModel]="durationFilter()"
-            (ngModelChange)="onDurationFilterChange($event, sessionsTable)"
-            optionLabel="label"
-            optionValue="value"
+            [value]="durationFilter()"
+            (valueChange)="onDurationFilterChange($event, sessionsTable)"
             placeholder="Délka"
             [showClear]="true"
-            appendTo="body"
-            class="w-full text-sm"
           />
         </th>
         <th
           class="!bg-slate-100 !border-0 px-6 py-2"
           style="min-width: 140px"
         >
-          <p-select
+          <app-form-select
             [options]="formOptions"
-            [ngModel]="formFilter()"
-            (ngModelChange)="onFormFilterChange($event, sessionsTable)"
-            optionLabel="label"
-            optionValue="value"
+            [value]="formFilter()"
+            (valueChange)="onFormFilterChange($event, sessionsTable)"
             placeholder="Forma"
             [showClear]="true"
-            appendTo="body"
-            class="w-full text-sm"
           />
         </th>
         <th class="!bg-slate-100 !border-0 px-6 py-2">
-          <p-select
+          <app-form-select
             [options]="paidOptions"
-            [ngModel]="paidFilter()"
-            (ngModelChange)="onPaidFilterChange($event, sessionsTable, globalFilterRef)"
-            optionLabel="label"
-            optionValue="value"
+            [value]="paidFilter()"
+            (valueChange)="onPaidFilterChange($event, sessionsTable, globalFilterRef)"
             placeholder="Platba"
             [showClear]="true"
-            appendTo="body"
-            class="w-full text-sm"
           />
         </th>
         <th class="!bg-slate-100 !border-0 px-6 py-2">

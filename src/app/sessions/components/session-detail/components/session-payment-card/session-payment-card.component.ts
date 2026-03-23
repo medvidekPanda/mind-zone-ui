@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, model } from "@angular/core";
-import { FormsModule } from "@angular/forms";
 
-import { CheckboxModule } from "primeng/checkbox";
 import { TagModule } from "primeng/tag";
+
+import { FormCheckboxComponent } from "../../../../../shared/components/form-checkbox/form-checkbox.component";
 
 @Component({
   selector: "app-session-payment-card",
-  imports: [FormsModule, CheckboxModule, TagModule],
+  imports: [FormCheckboxComponent, TagModule],
   templateUrl: "./session-payment-card.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
