@@ -63,7 +63,6 @@ export const routes: Routes = [
       },
       {
         path: "sessions/new",
-        data: { isNew: true },
         loadComponent: () =>
           import("./sessions/components/session-detail/session-detail.component").then((m) => m.SessionDetailComponent),
       },
@@ -76,7 +75,6 @@ export const routes: Routes = [
       },
       {
         path: "sessions/:id",
-        data: { isNew: false },
         loadComponent: () =>
           import("./sessions/components/session-detail/session-detail.component").then((m) => m.SessionDetailComponent),
       },

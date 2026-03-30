@@ -22,12 +22,13 @@
 </div>
 
 <!-- Table card -->
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+<div class="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
   @let _sessions = sessions();
 
   <p-table
     #sessionsTable
     [value]="_sessions"
+    [loading]="isLoading()"
     [scrollable]="true"
     scrollHeight="flex"
     [globalFilterFields]="['date', 'time', 'therapistName', 'clientName', 'form']"
@@ -156,6 +157,7 @@
         <th class="!bg-slate-100 !border-0 px-6 py-2"></th>
       </tr>
     </ng-template>
+
     <ng-template
       pTemplate="body"
       let-session
@@ -209,6 +211,7 @@
         </td>
       </tr>
     </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td

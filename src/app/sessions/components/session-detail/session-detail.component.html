@@ -18,7 +18,7 @@
       severity="secondary"
       [text]="true"
     ></a>
-    @if (!editing() && !isNewSession) {
+    @if (!isNewSession()) {
       <button
         type="button"
         pButton
@@ -27,25 +27,73 @@
         [text]="true"
         (click)="actionsMenu.toggle($event)"
       ></button>
+
       <button
         type="button"
         pButton
         label="Upravit"
         icon="pi pi-pencil"
-        (click)="startEdit()"
+        (click)="sessionStore.startEditing()"
       ></button>
     }
   </div>
 </app-page-header>
 
-<div class="overflow-y-hidden flex-1 py-6 space-y-6">
-  <app-session-form
-    [clientId]="clientIdFromUrl()"
-    [readonly]="!editing()"
-    [showActions]="editing()"
-    [paid]="paid()"
-    (paidChange)="paid.set($event)"
-    (saved)="onSaved()"
-    (cancelled)="onCancelled()"
-  />
+<div class="flex-1 relative overflow-y-hidden">
+  @if (isLoading()) {
+    <div class="h-full overflow-y-auto py-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 h-full">
+        <!-- Sidebar skeleton -->
+        <aside class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5 space-y-5">
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <div class="flex flex-col gap-2">
+              <p-skeleton
+                width="6rem"
+                height="0.75rem"
+                borderRadius="4px"
+              />
+              <p-skeleton
+                height="2.25rem"
+                borderRadius="8px"
+              />
+            </div>
+          }
+        </aside>
+
+        <!-- Main panel skeleton -->
+        <div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm overflow-hidden flex flex-col">
+          <!-- Tab bar -->
+          <div class="flex gap-6 px-6 py-3 border-b border-surface-200">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <p-skeleton
+                width="5rem"
+                height="1rem"
+                borderRadius="4px"
+              />
+            }
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 p-6 space-y-3">
+            @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+              <p-skeleton
+                [width]="i % 3 === 0 ? '60%' : '100%'"
+                height="1rem"
+                borderRadius="4px"
+              />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="h-full overflow-y-auto py-6 space-y-6">
+      <app-session-form
+        [clientId]="clientIdFromUrl()"
+        [paid]="paid()"
+        (paidChange)="paid.set($event)"
+        (cancelled)="onCancelled()"
+      />
+    </div>
+  }
 </div>

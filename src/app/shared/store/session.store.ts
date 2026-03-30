@@ -18,6 +18,7 @@ type SessionState = {
   sessions: Session[];
   session: Session | null;
   isLoading: boolean;
+  isEditing: boolean;
   error: string | null;
 };
 
@@ -25,6 +26,7 @@ const initialState: SessionState = {
   sessions: [],
   session: null,
   isLoading: false,
+  isEditing: false,
   error: null,
 };
 
@@ -69,7 +71,7 @@ export const SessionStore = signalStore(
           tap(() => patchState(store, { isLoading: true, error: null })),
           switchMap((payload) =>
             sessionService.createSession(payload).pipe(
-              tap((session) => patchState(store, { session, isLoading: false, error: null })),
+              tap((session) => patchState(store, { session, isLoading: false, isEditing: false, error: null })),
               catchError((error) => {
                 patchState(store, { error: error.message, isLoading: false });
                 return of(null);
@@ -84,7 +86,7 @@ export const SessionStore = signalStore(
           tap(() => patchState(store, { isLoading: true, error: null })),
           switchMap(({ id, payload }) =>
             sessionService.updateSession(id, payload).pipe(
-              tap((session) => patchState(store, { session, isLoading: false, error: null })),
+              tap((session) => patchState(store, { session, isLoading: false, isEditing: false, error: null })),
               catchError((error) => {
                 patchState(store, { error: error.message, isLoading: false });
                 return of(null);
@@ -212,7 +214,9 @@ export const SessionStore = signalStore(
         ),
       ),
 
-      resetSession: () => patchState(store, { session: null }),
+      startEditing: () => patchState(store, { isEditing: true }),
+      stopEditing: () => patchState(store, { isEditing: false }),
+      resetSession: () => patchState(store, { session: null, isEditing: false }),
       resetAll: () => patchState(store, initialState),
     }),
   ),

@@ -58,6 +58,7 @@ export class SessionsListComponent {
   ];
 
   protected readonly formOptions = SESSION_FORM_OPTIONS;
+  protected readonly isLoading = this.sessionStore.isLoading;
 
   protected readonly paidOptions: { label: string; value: boolean | null }[] = [
     { label: "Zaplaceno", value: true },

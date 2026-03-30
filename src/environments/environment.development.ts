@@ -3,7 +3,7 @@ import packageJson from "../../package.json";
 export const environment = {
   production: false,
   version: packageJson.version,
-  apiUrl: "/api",
+  apiUrl: "http://localhost:3001/api",
   firebase: {
     apiKey: "AIzaSyDDsYKh4yEpO4YU25o2QoGhNgeZGl1bNCM",
     authDomain: "mind-zone-97624.firebaseapp.com",

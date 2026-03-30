@@ -73,7 +73,9 @@ export class SessionFormComponent {
   private readonly sessionStore = inject(SessionStore);
   private readonly tagStore = inject(TagStore);
 
+  private readonly formReadonly = computed(() => !this.isEditing());
   private readonly saving = signal(false);
+
   protected readonly pendingFiles = signal<File[]>([]);
   protected readonly attachments = computed(() => this.sessionDetail()?.attachments ?? []);
   protected readonly attachmentCount = computed(() => this.attachments().length + this.pendingFiles().length);
@@ -103,21 +105,17 @@ export class SessionFormComponent {
   protected readonly clients = computed(() => this.clientStore.clients());
 
   readonly clientId = input<string | null>(null);
-  readonly readonly = input<boolean>(false);
-  readonly showActions = input<boolean>(false);
-
   readonly paid = model<boolean>(false);
-
-  readonly saved = output<void>();
-  readonly cancelled = output<void>();
 
   protected clientOptions = computed(() => {
     const options = this.clientStore.clients().map((client) => ({
       label: `${client.firstName} ${client.lastName}`,
       value: client.id,
     }));
+
     const session = this.sessionDetail();
-    if (session?.clientId && session?.client && !options.find((o) => o.value === session.clientId)) {
+
+    if (session?.clientId && session?.client && !options.find((option) => option.value === session.clientId)) {
       options.push({ label: `${session.client.firstName} ${session.client.lastName}`, value: session.clientId });
     }
     return options;
@@ -148,17 +146,17 @@ export class SessionFormComponent {
       required(schemaPath.type, { message: "Typ je povinný" });
       required(schemaPath.startTime, { message: "Začátek je povinný" });
 
-      readonly(schemaPath.date, this.readonly);
-      readonly(schemaPath.form, this.readonly);
-      readonly(schemaPath.type, this.readonly);
-      readonly(schemaPath.notes, this.readonly);
-      readonly(schemaPath.summary, this.readonly);
-      readonly(schemaPath.clientId, this.readonly);
-      readonly(schemaPath.startTime, this.readonly);
-      readonly(schemaPath.endTime, this.readonly);
-      readonly(schemaPath.tags, this.readonly);
-      readonly(schemaPath.price, this.readonly);
-      readonly(schemaPath.paid, this.readonly);
+      readonly(schemaPath.date, this.formReadonly);
+      readonly(schemaPath.form, this.formReadonly);
+      readonly(schemaPath.type, this.formReadonly);
+      readonly(schemaPath.notes, this.formReadonly);
+      readonly(schemaPath.summary, this.formReadonly);
+      readonly(schemaPath.clientId, this.formReadonly);
+      readonly(schemaPath.startTime, this.formReadonly);
+      readonly(schemaPath.endTime, this.formReadonly);
+      readonly(schemaPath.tags, this.formReadonly);
+      readonly(schemaPath.price, this.formReadonly);
+      readonly(schemaPath.paid, this.formReadonly);
     },
     {
       submission: {
@@ -168,6 +166,11 @@ export class SessionFormComponent {
       },
     },
   );
+
+  protected readonly isEditing = computed(() => this.sessionStore.isEditing() || !this.sessionStore.session()?.id);
+  protected readonly showActions = computed(() => this.isEditing());
+
+  readonly cancelled = output<void>();
 
   constructor() {
     this.clientStore.loadAll();
@@ -235,14 +238,10 @@ export class SessionFormComponent {
 
         if (session?.id && files.length > 0) {
           for (const file of files) {
-            // Voláme store, ne servisu přímo.
-            // Store je root-provided, takže nahrávání doběhne i po navigaci pryč.
             this.sessionStore.uploadAttachment({ sessionId: session.id, file });
           }
           this.pendingFiles.set([]);
         }
-
-        this.saved.emit();
       }
     });
   }

@@ -3,7 +3,7 @@
   "version": "0.0.1-alpha.3",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --configuration development",
     "build": "ng build",
     "build:dev": "ng build --configuration dev",
     "watch": "ng build --watch --configuration development",
