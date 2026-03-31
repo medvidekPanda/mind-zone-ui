@@ -8,7 +8,7 @@ import { provideRouter, withComponentInputBinding } from "@angular/router";
 
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
-import { MessageService } from "primeng/api";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { providePrimeNG } from "primeng/config";
 import { DialogService } from "primeng/dynamicdialog";
 
@@ -33,6 +33,7 @@ const appPreset = definePreset(Aura, {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    ConfirmationService,
     DialogService,
     MessageService,
     provideBrowserGlobalErrorListeners(),

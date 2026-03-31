@@ -11,6 +11,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
 import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
+import { DeleteConfirmService } from "../shared/service/delete-confirm.service";
 import { SESSION_FORM_OPTIONS } from "../shared/constants/session.constants";
 import { AppStore } from "../shared/store/app.store";
 import { SessionStore } from "../shared/store/session.store";
@@ -46,6 +47,7 @@ interface SessionRow {
 })
 export class SessionsListComponent {
   private readonly appStore = inject(AppStore);
+  private readonly deleteConfirm = inject(DeleteConfirmService);
   private readonly sessionStore = inject(SessionStore);
 
   protected readonly durationFilter = signal<number | null>(null);
@@ -90,8 +92,10 @@ export class SessionsListComponent {
     this.sessionStore.loadAll();
   }
 
-  protected deleteSession(id: string): void {
-    this.sessionStore.deleteSession(id);
+  protected deleteSession(sessionId: string): void {
+    this.deleteConfirm.confirmDelete(() => {
+      this.sessionStore.deleteSession(sessionId);
+    });
   }
 
   protected onDurationFilterChange(

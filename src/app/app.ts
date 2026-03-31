@@ -5,6 +5,7 @@ import { Router, RouterLink, RouterOutlet } from "@angular/router";
 import type { MenuItem } from "primeng/api";
 import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { MenuModule } from "primeng/menu";
 import { MenubarModule } from "primeng/menubar";
 import { ToastModule } from "primeng/toast";
@@ -18,7 +19,16 @@ import { UserStore } from "./shared/store/user.store";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, RouterLink, MenubarModule, ButtonModule, BadgeModule, MenuModule, ToastModule],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    MenubarModule,
+    ButtonModule,
+    BadgeModule,
+    MenuModule,
+    ToastModule,
+    ConfirmDialogModule,
+  ],
   templateUrl: "./app.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

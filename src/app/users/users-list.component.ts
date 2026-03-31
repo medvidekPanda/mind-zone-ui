@@ -11,6 +11,7 @@ import { TooltipModule } from "primeng/tooltip";
 
 import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
 import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
+import { DeleteConfirmService } from "../shared/service/delete-confirm.service";
 import { UserRole } from "../shared/interfaces/user.interface";
 import { UserStore } from "../shared/store/user.store";
 
@@ -33,6 +34,7 @@ import { UserStore } from "../shared/store/user.store";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersListComponent {
+  private readonly deleteConfirm = inject(DeleteConfirmService);
   private readonly userStore = inject(UserStore);
 
   protected readonly isLoading = this.userStore.isLoading;
@@ -51,8 +53,10 @@ export class UsersListComponent {
     this.userStore.loadAll();
   }
 
-  protected deleteUser(id: string): void {
-    this.userStore.deleteUser(id);
+  protected deleteUser(userId: string): void {
+    this.deleteConfirm.confirmDelete(() => {
+      this.userStore.deleteUser(userId);
+    });
   }
 
   protected onRoleFilterChange(

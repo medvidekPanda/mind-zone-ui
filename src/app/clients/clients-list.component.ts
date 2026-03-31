@@ -13,6 +13,7 @@ import { FormSelectComponent } from "../shared/components/form-select/form-selec
 import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
 import { CLIENT_STATUS_OPTIONS } from "../shared/constants/client.constants";
 import { ClientStatus } from "../shared/interfaces/client.interface";
+import { DeleteConfirmService } from "../shared/service/delete-confirm.service";
 import { AppStore } from "../shared/store/app.store";
 import { ClientStore } from "../shared/store/client.store";
 
@@ -37,6 +38,7 @@ import { ClientStore } from "../shared/store/client.store";
 export class ClientsListComponent {
   private readonly appStore = inject(AppStore);
   private readonly clientStore = inject(ClientStore);
+  private readonly deleteConfirm = inject(DeleteConfirmService);
 
   protected readonly isLoading = this.clientStore.isLoadingList;
 
@@ -77,7 +79,9 @@ export class ClientsListComponent {
     }
   }
 
-  protected deleteClient(_id: string): void {
-    this.clientStore.deleteClient(_id);
+  protected deleteClient(clientId: string): void {
+    this.deleteConfirm.confirmDelete(() => {
+      this.clientStore.deleteClient(clientId);
+    });
   }
 }
