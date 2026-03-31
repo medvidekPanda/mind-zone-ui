@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 import { ButtonModule } from "primeng/button";
@@ -6,6 +6,8 @@ import { CardModule } from "primeng/card";
 import { ChartModule } from "primeng/chart";
 import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
+
+import { AuthStore } from "../shared/store/auth.store";
 
 @Component({
   selector: "app-dashboard",
@@ -15,6 +17,10 @@ import { TooltipModule } from "primeng/tooltip";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent {
+  private readonly authStore = inject(AuthStore);
+
+  protected readonly currentUser = this.authStore.currentUser;
+
   protected readonly paidCount = signal(12);
   protected readonly unpaidCount = signal(3);
   protected readonly pieData = signal({
@@ -27,14 +33,17 @@ export class DashboardComponent {
       },
     ],
   });
+
   protected readonly pieOptions = signal({
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: "bottom" } },
   });
+
   protected readonly todaySessions = signal([
     { id: "1", time: "09:00", clientName: "Jan Novák", clientId: "c1" },
     { id: "2", time: "14:00", clientName: "Marie Svobodová", clientId: "c2" },
   ]);
+
   protected readonly tomorrowSessions = signal([{ id: "3", time: "10:00", clientName: "Petr Dvořák", clientId: "c3" }]);
 }

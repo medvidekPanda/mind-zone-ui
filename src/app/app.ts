@@ -7,6 +7,7 @@ import { BadgeModule } from "primeng/badge";
 import { ButtonModule } from "primeng/button";
 import { MenuModule } from "primeng/menu";
 import { MenubarModule } from "primeng/menubar";
+import { ToastModule } from "primeng/toast";
 
 import { environment } from "../environments/environment";
 import { AuthService } from "./shared/service/auth.service";
@@ -17,7 +18,7 @@ import { UserStore } from "./shared/store/user.store";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, RouterLink, MenubarModule, ButtonModule, BadgeModule, MenuModule],
+  imports: [RouterOutlet, RouterLink, MenubarModule, ButtonModule, BadgeModule, MenuModule, ToastModule],
   templateUrl: "./app.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

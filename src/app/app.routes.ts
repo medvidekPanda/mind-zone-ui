@@ -26,13 +26,11 @@ export const routes: Routes = [
       },
       {
         path: "users/new",
-        data: { isNew: true },
         loadComponent: () =>
           import("./users/components/user-detail/user-detail.component").then((m) => m.UserDetailComponent),
       },
       {
         path: "users/:id",
-        data: { isNew: false },
         loadComponent: () =>
           import("./users/components/user-detail/user-detail.component").then((m) => m.UserDetailComponent),
       },
@@ -47,13 +45,11 @@ export const routes: Routes = [
       },
       {
         path: "clients/new",
-        data: { isNew: true },
         loadComponent: () =>
           import("./clients/components/client-detail/client-detail.component").then((m) => m.ClientDetailComponent),
       },
       {
         path: "clients/:id",
-        data: { isNew: false },
         loadComponent: () =>
           import("./clients/components/client-detail/client-detail.component").then((m) => m.ClientDetailComponent),
       },

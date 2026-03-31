@@ -7,8 +7,10 @@ import { InputIconModule } from "primeng/inputicon";
 import { InputTextModule } from "primeng/inputtext";
 import { TableModule } from "primeng/table";
 import { TagModule } from "primeng/tag";
+import { TooltipModule } from "primeng/tooltip";
 
 import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
+import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
 import { CLIENT_STATUS_OPTIONS } from "../shared/constants/client.constants";
 import { ClientStatus } from "../shared/interfaces/client.interface";
 import { AppStore } from "../shared/store/app.store";
@@ -24,7 +26,9 @@ import { ClientStore } from "../shared/store/client.store";
     TagModule,
     IconFieldModule,
     InputIconModule,
+    TooltipModule,
     FormSelectComponent,
+    ListReloadButtonComponent,
   ],
   templateUrl: "./clients-list.component.html",
   host: { class: "flex flex-col h-full" },
@@ -33,6 +37,8 @@ import { ClientStore } from "../shared/store/client.store";
 export class ClientsListComponent {
   private readonly appStore = inject(AppStore);
   private readonly clientStore = inject(ClientStore);
+
+  protected readonly isLoading = this.clientStore.isLoadingList;
 
   protected readonly clients = computed(() =>
     this.clientStore.clients().map((client) => ({

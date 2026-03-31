@@ -10,6 +10,7 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
+import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
 import { SESSION_FORM_OPTIONS } from "../shared/constants/session.constants";
 import { AppStore } from "../shared/store/app.store";
 import { SessionStore } from "../shared/store/session.store";
@@ -37,6 +38,7 @@ interface SessionRow {
     InputIconModule,
     InputTextModule,
     FormSelectComponent,
+    ListReloadButtonComponent,
   ],
   templateUrl: "./sessions-list.component.html",
   host: { class: "flex flex-col h-full" },
@@ -88,6 +90,26 @@ export class SessionsListComponent {
     this.sessionStore.loadAll();
   }
 
+  protected deleteSession(id: string): void {
+    this.sessionStore.deleteSession(id);
+  }
+
+  protected onDurationFilterChange(
+    value: number | null,
+    table: { filter: (v: unknown, f: string, m: string) => void },
+  ): void {
+    this.durationFilter.set(value);
+    table.filter(value, "plannedDurationMinutes", "equals");
+  }
+
+  protected onFormFilterChange(
+    value: string | null,
+    table: { filter: (v: unknown, f: string, m: string) => void },
+  ): void {
+    this.formFilter.set(value);
+    table.filter(value, "form", "equals");
+  }
+
   protected onPaidFilterChange(
     value: boolean | null,
     table: {
@@ -107,23 +129,7 @@ export class SessionsListComponent {
     }
   }
 
-  protected onDurationFilterChange(
-    value: number | null,
-    table: { filter: (v: unknown, f: string, m: string) => void },
-  ): void {
-    this.durationFilter.set(value);
-    table.filter(value, "plannedDurationMinutes", "equals");
-  }
-
-  protected onFormFilterChange(
-    value: string | null,
-    table: { filter: (v: unknown, f: string, m: string) => void },
-  ): void {
-    this.formFilter.set(value);
-    table.filter(value, "form", "equals");
-  }
-
-  protected deleteSession(id: string): void {
-    this.sessionStore.deleteSession(id);
+  protected reloadSessions(): void {
+    this.sessionStore.loadAll();
   }
 }

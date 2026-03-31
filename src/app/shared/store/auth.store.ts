@@ -49,7 +49,7 @@ export const AuthStore = signalStore(
             tap(() => patchState(store, { isAuthenticated: true, isLoading: false, error: null })),
             switchMap(() =>
               userService.getMe().pipe(
-                tap((user) => patchState(store, { currentUser: user })),
+                tap((user) => patchState(store, { currentUser: user, needsRegistration: false })),
                 catchError(() => {
                   patchState(store, { needsRegistration: true });
                   return of(null);
@@ -104,12 +104,13 @@ export const AuthStore = signalStore(
                   currentUser: null,
                   isAuthenticated: false,
                   isLoading: false,
+                  needsRegistration: false,
                 });
                 return of(null);
               }
               patchState(store, { isAuthenticated: true, isLoading: false });
               return userService.getMe().pipe(
-                tap((user) => patchState(store, { currentUser: user })),
+                tap((user) => patchState(store, { currentUser: user, needsRegistration: false })),
                 catchError(() => {
                   patchState(store, { needsRegistration: true });
                   return of(null);

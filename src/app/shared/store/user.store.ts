@@ -11,6 +11,7 @@ import { AuthStore } from "./auth.store";
 type UserState = {
   users: User[];
   user: User | null;
+  isEditing: boolean;
   isLoading: boolean;
   error: string | null;
 };
@@ -18,6 +19,7 @@ type UserState = {
 const initialState: UserState = {
   users: [],
   user: null,
+  isEditing: false,
   isLoading: false,
   error: null,
 };
@@ -63,7 +65,7 @@ export const UserStore = signalStore(
         switchMap((payload) =>
           userService.createUser(payload).pipe(
             tap((user) => {
-              patchState(store, { user, isLoading: false, error: null });
+              patchState(store, { user, isEditing: false, isLoading: false, error: null });
             }),
             catchError((err) => {
               patchState(store, { error: err.message, isLoading: false });
@@ -80,7 +82,7 @@ export const UserStore = signalStore(
         switchMap(({ id, payload }) =>
           userService.updateUser(id, payload).pipe(
             tap((user) => {
-              patchState(store, { user, isLoading: false, error: null });
+              patchState(store, { user, isEditing: false, isLoading: false, error: null });
               if (authStore.currentUser()?.id === user.id) {
                 authStore.syncCurrentUser(user);
               }
@@ -99,7 +101,7 @@ export const UserStore = signalStore(
         tap(() => patchState(store, { error: null })),
         switchMap((id) => {
           const originalUsers = store.users();
-          patchState(store, { users: originalUsers.filter((u) => u.id !== id) });
+          patchState(store, { users: originalUsers.filter((user) => user.id !== id) });
 
           return userService.deleteUser(id).pipe(
             catchError((err) => {
@@ -111,7 +113,9 @@ export const UserStore = signalStore(
       ),
     ),
 
-    resetUser: () => patchState(store, { user: null }),
+    startEditing: () => patchState(store, { isEditing: true }),
+    stopEditing: () => patchState(store, { isEditing: false }),
+    resetUser: () => patchState(store, { user: null, isEditing: false }),
     resetAll: () => patchState(store, initialState),
   })),
 );

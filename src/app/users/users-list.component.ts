@@ -10,7 +10,7 @@ import { TagModule } from "primeng/tag";
 import { TooltipModule } from "primeng/tooltip";
 
 import { FormSelectComponent } from "../shared/components/form-select/form-select.component";
-
+import { ListReloadButtonComponent } from "../shared/components/list-reload-button/list-reload-button.component";
 import { UserRole } from "../shared/interfaces/user.interface";
 import { UserStore } from "../shared/store/user.store";
 
@@ -26,6 +26,7 @@ import { UserStore } from "../shared/store/user.store";
     InputIconModule,
     TooltipModule,
     FormSelectComponent,
+    ListReloadButtonComponent,
   ],
   templateUrl: "./users-list.component.html",
   host: { class: "flex flex-col h-full" },
@@ -33,6 +34,8 @@ import { UserStore } from "../shared/store/user.store";
 })
 export class UsersListComponent {
   private readonly userStore = inject(UserStore);
+
+  protected readonly isLoading = this.userStore.isLoading;
 
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
     { label: "Uživatel", value: UserRole.USER },
@@ -46,6 +49,10 @@ export class UsersListComponent {
 
   constructor() {
     this.userStore.loadAll();
+  }
+
+  protected deleteUser(id: string): void {
+    this.userStore.deleteUser(id);
   }
 
   protected onRoleFilterChange(
@@ -66,7 +73,7 @@ export class UsersListComponent {
     }
   }
 
-  protected deleteUser(id: string): void {
-    this.userStore.deleteUser(id);
+  protected reloadUsers(): void {
+    this.userStore.loadAll();
   }
 }

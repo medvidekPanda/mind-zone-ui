@@ -1,13 +1,8 @@
-<p-dialog
-  [visible]="visible()"
-  (visibleChange)="visible.set($event)"
-  header="Naplánovat sezení"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  styleClass="w-full max-w-lg"
->
-  <form [formRoot]="scheduleForm" class="flex flex-col gap-4 pt-1">
+<div class="flex flex-col gap-4 pt-1">
+  <form
+    [formRoot]="scheduleForm"
+    class="flex flex-col gap-4"
+  >
     <div class="flex flex-col gap-1">
       <label
         for="dlg-client"
@@ -98,7 +93,7 @@
     </div>
   </form>
 
-  <ng-template pTemplate="footer">
+  <div class="flex justify-end gap-2 pt-2 border-t border-surface-200">
     <p-button
       label="Zrušit"
       severity="secondary"
@@ -110,5 +105,5 @@
       icon="pi pi-calendar-plus"
       (click)="onSave()"
     />
-  </ng-template>
-</p-dialog>
+  </div>
+</div>

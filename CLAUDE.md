@@ -33,6 +33,7 @@ npm run start:dev  # Build dev + start proxy
 Use the **Angular CLI MCP** (`get_best_practices`, `search_documentation`, `find_examples`) before writing or changing Angular code. Follow its guidance with one exception:
 
 - **Naming:** keep pre-v20 suffixes — `LoginComponent`, `AuthGuard`, `SessionStore` — not the suffix-free style introduced in v20+
+- **Templates:** never call injected services or signal stores directly from the template (e.g. `(click)="myService.doThing()"`, `sessionStore.startEditing()`). Use `protected` component methods, `computed()` values, or readonly field aliases to store signals instead
 
 ## App Areas
 
@@ -64,6 +65,16 @@ src/app/
 ## Signal Stores
 
 `signalStore` from `@ngrx/signals`. Global `AppStore` (provided in root) holds enum metadata. Feature stores live alongside their feature.
+
+### Detail page pattern (sessions is the reference)
+
+- Store owns `isEditing`, `startEditing()`, `stopEditing()` — no local editing signal in the component
+- `isNew` is derived: `computed(() => !store.entity()?.id)` — no `data: { isNew }` in routes
+- Constructor: always `resetEntity()`, then `loadEntity(id)` if id present, else `startEditing()`
+- After create, URL updates via `location.replaceState()` effect — no navigation to list
+- Form components derive `isEditing` and `showActions` from the store — no `readonly`/`showActions` inputs
+- No `saved` output from form components — store state change drives everything
+- `cancelled` output stays (navigation decision belongs to the detail component)
 
 ## Testing
 

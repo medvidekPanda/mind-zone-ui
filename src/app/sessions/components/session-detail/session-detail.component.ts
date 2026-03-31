@@ -23,7 +23,7 @@ export class SessionDetailComponent {
   private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  protected readonly sessionStore = inject(SessionStore);
+  private readonly sessionStore = inject(SessionStore);
 
   private readonly paramMap = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
@@ -49,13 +49,14 @@ export class SessionDetailComponent {
   ]);
 
   protected readonly clientIdFromUrl = computed(() => this.queryParamMap()?.get("clientId") ?? null);
+  protected readonly isEditing = this.sessionStore.isEditing;
   protected readonly isLoading = this.sessionStore.isLoading;
   protected readonly isNewSession = computed(() => !this.sessionStore.session()?.id);
 
   protected readonly pageTitle = computed(() => {
     const session = this.session();
     if (this.isNewSession()) return "Nové sezení";
-    if (this.sessionStore.isEditing()) return "Úprava sezení";
+    if (this.isEditing()) return "Úprava sezení";
     if (!session?.date) return "Záznam sezení";
 
     const date = new Date(session.date);
@@ -95,6 +96,10 @@ export class SessionDetailComponent {
     }
   }
 
+  protected onDelete(): void {
+    // TODO: implement after API integration
+  }
+
   protected onGenerateInvoice(): void {
     // TODO: implement after API integration
   }
@@ -103,8 +108,8 @@ export class SessionDetailComponent {
     // TODO: implement after API integration
   }
 
-  protected onDelete(): void {
-    // TODO: implement after API integration
+  protected onStartEditing(): void {
+    this.sessionStore.startEditing();
   }
 
   private syncPaidWithSession(): void {

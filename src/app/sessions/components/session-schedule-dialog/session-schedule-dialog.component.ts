@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from "@angular/core";
 import { FormField, FormRoot, form, required } from "@angular/forms/signals";
 
 import { Button } from "primeng/button";
-import { Dialog } from "primeng/dialog";
+import { DynamicDialogRef } from "primeng/dynamicdialog";
 
 import { FormDatepickerComponent } from "../../../shared/components/form-datepicker/form-datepicker.component";
 import { FormSelectComponent } from "../../../shared/components/form-select/form-select.component";
@@ -32,25 +32,15 @@ type ScheduleFormModel = {
 
 @Component({
   selector: "app-session-schedule-dialog",
-  imports: [
-    Dialog,
-    Button,
-    FormRoot,
-    FormField,
-    FormDatepickerComponent,
-    FormSelectComponent,
-    FormTimepickerComponent,
-  ],
+  imports: [Button, FormRoot, FormField, FormDatepickerComponent, FormSelectComponent, FormTimepickerComponent],
   templateUrl: "./session-schedule-dialog.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionScheduleDialogComponent {
   private readonly clientStore = inject(ClientStore);
+  private readonly dynamicDialogRef = inject(DynamicDialogRef);
 
-  readonly visible = model<boolean>(false);
   readonly clientId = input<string>("");
-
-  readonly save = output<SchedulePayload>();
 
   private readonly scheduleModel = signal<ScheduleFormModel>({
     clientId: null,
@@ -66,9 +56,16 @@ export class SessionScheduleDialogComponent {
     required(s.date, { message: "Datum je povinné" });
   });
 
-  protected readonly clientOptions = computed(() =>
-    this.clientStore.clients().map((c) => ({ label: `${c.firstName} ${c.lastName}`, value: c.id })),
-  );
+  protected readonly clientOptions = computed(() => {
+    const preselectedId = this.clientId();
+    const current = this.clientStore.client();
+
+    if (preselectedId && current?.id === preselectedId) {
+      return [{ label: `${current.firstName} ${current.lastName}`, value: current.id }];
+    }
+
+    return this.clientStore.clients().map((c) => ({ label: `${c.firstName} ${c.lastName}`, value: c.id }));
+  });
 
   protected readonly formOptions = SESSION_FORM_OPTIONS;
   protected readonly typeOptions = SESSION_TYPE_OPTIONS;
@@ -82,32 +79,33 @@ export class SessionScheduleDialogComponent {
   });
 
   constructor() {
-    this.clientStore.loadAll();
     this.syncClientId();
   }
 
   protected onSave(): void {
     const value = this.scheduleForm().value() as ScheduleFormModel;
-    this.save.emit({
+    const payload: SchedulePayload = {
       clientId: value.clientId,
       date: value.date ? new Date(value.date) : null,
       startTime: value.startTime,
       endTime: value.endTime,
       form: value.form,
       type: value.type,
-    });
-    this.visible.set(false);
+    };
+
+    this.dynamicDialogRef.close(payload);
   }
 
   protected close(): void {
-    this.visible.set(false);
+    this.dynamicDialogRef.close();
   }
 
   private syncClientId(): void {
     effect(() => {
       const clientId = this.clientId();
+
       if (clientId) {
-        this.scheduleModel.update((m) => ({ ...m, clientId }));
+        this.scheduleModel.update((model) => ({ ...model, clientId }));
       }
     });
   }

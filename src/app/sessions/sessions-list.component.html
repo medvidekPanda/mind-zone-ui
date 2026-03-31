@@ -3,7 +3,8 @@
     <h1 class="text-2xl font-bold text-slate-900 m-0">Sezení</h1>
     <p class="text-sm text-slate-500 m-0 mt-1">Přehled všech terapeutických sezení</p>
   </div>
-  <div class="flex gap-3">
+  <div class="flex flex-wrap gap-2">
+    <app-list-reload-button (reload)="reloadSessions()" />
     <a
       routerLink="/sessions/calendar"
       pButton

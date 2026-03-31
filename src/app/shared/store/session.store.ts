@@ -144,7 +144,10 @@ export const SessionStore = signalStore(
                 const session = store.session();
                 if (session) {
                   patchState(store, {
-                    session: { ...session, attachments: session.attachments.filter((a) => a.id !== attachmentId) },
+                    session: {
+                      ...session,
+                      attachments: session.attachments.filter((attachment) => attachment.id !== attachmentId),
+                    },
                   });
                 }
               }),
@@ -167,16 +170,16 @@ export const SessionStore = signalStore(
         const session = store.session();
         if (!session) return;
 
-        const attachments = session.attachments.map((a) =>
-          a.id === update.attachmentId
+        const attachments = session.attachments.map((attachment) =>
+          attachment.id === update.attachmentId
             ? {
-                ...a,
+                ...attachment,
                 processingStatus: update.status,
-                processingProgress: update.progress ?? a.processingProgress,
-                processingError: update.error !== undefined ? update.error : a.processingError,
-                transcript: update.transcript !== undefined ? update.transcript : a.transcript,
+                processingProgress: update.progress ?? attachment.processingProgress,
+                processingError: update.error !== undefined ? update.error : attachment.processingError,
+                transcript: update.transcript !== undefined ? update.transcript : attachment.transcript,
               }
-            : a,
+            : attachment,
         );
 
         patchState(store, { session: { ...session, attachments } });
@@ -198,10 +201,15 @@ export const SessionStore = signalStore(
                   const session = store.session();
                   if (!session) return;
 
-                  const attachments = session.attachments.map((a) =>
-                    a.id === attachmentId
-                      ? { ...a, processingStatus: "queued" as const, processingProgress: 0, processingError: null }
-                      : a,
+                  const attachments = session.attachments.map((attachment) =>
+                    attachment.id === attachmentId
+                      ? {
+                          ...attachment,
+                          processingStatus: "queued" as const,
+                          processingProgress: 0,
+                          processingError: null,
+                        }
+                      : attachment,
                   );
                   patchState(store, { session: { ...session, attachments } });
                 }),

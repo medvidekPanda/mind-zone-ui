@@ -8,11 +8,14 @@ import { provideRouter, withComponentInputBinding } from "@angular/router";
 
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
+import { MessageService } from "primeng/api";
 import { providePrimeNG } from "primeng/config";
+import { DialogService } from "primeng/dynamicdialog";
 
 import { environment } from "../environments/environment";
 import { routes } from "./app.routes";
 import { authInterceptor } from "./shared/service/auth.interceptor";
+import { errorInterceptor } from "./shared/service/error.interceptor";
 
 const appPreset = definePreset(Aura, {
   components: {
@@ -30,11 +33,13 @@ const appPreset = definePreset(Aura, {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    DialogService,
+    MessageService,
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideClientHydration(withEventReplay()),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor]), withFetch()),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]), withFetch()),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     providePrimeNG({

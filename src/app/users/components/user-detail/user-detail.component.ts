@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
+import { Location } from "@angular/common";
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
@@ -6,6 +7,7 @@ import { MenuItem } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
 import { MenuModule } from "primeng/menu";
+import { SkeletonModule } from "primeng/skeleton";
 
 import { PageHeaderComponent } from "../../../shared/components/page-header/page-header.component";
 import { UserStore } from "../../../shared/store/user.store";
@@ -19,6 +21,7 @@ import { UserStatsComponent } from "../user-stats/user-stats.component";
     ButtonModule,
     CardModule,
     MenuModule,
+    SkeletonModule,
     PageHeaderComponent,
     RouterLink,
     UserFormComponent,
@@ -30,56 +33,57 @@ import { UserStatsComponent } from "../user-stats/user-stats.component";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserDetailComponent {
-  private readonly userStore = inject(UserStore);
+  private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly userStore = inject(UserStore);
 
   private readonly paramMap = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
   });
 
-  private readonly id = computed(() => this.paramMap()?.get("id") ?? undefined);
-
-  protected readonly isNewUser: boolean = this.route.snapshot.data["isNew"];
-  protected readonly user = computed(() => this.userStore.user());
-  protected readonly editing = signal(this.isNewUser);
+  private readonly id = computed(() => this.paramMap()?.get("id"));
 
   protected readonly actionMenuItems: MenuItem[] = [
+    { label: "Upravit uživatele", icon: "pi pi-user-edit", command: () => this.userStore.startEditing() },
     { label: "Smazat uživatele", icon: "pi pi-trash", command: () => this.onDelete() },
   ];
-
-  protected onDelete(): void {
-    // TODO: implement after API integration
-  }
+  protected readonly isEditing = this.userStore.isEditing;
+  protected readonly isLoading = this.userStore.isLoading;
+  protected readonly isNewUser = computed(() => !this.userStore.user()?.id);
+  protected readonly user = computed(() => this.userStore.user());
 
   constructor() {
-    if (this.isNewUser) {
+    effect(() => {
+      const routeId = this.id();
+
       this.userStore.resetUser();
-    } else {
-      const id = this.id();
-      if (id) {
-        this.userStore.loadUser(id);
+
+      if (routeId) {
+        this.userStore.loadUser(routeId);
+      } else {
+        this.userStore.startEditing();
       }
-    }
-  }
+    });
 
-  protected startEdit(): void {
-    this.editing.set(true);
-  }
+    effect(() => {
+      const currentUser = this.userStore.user();
 
-  protected onSaved(): void {
-    if (this.isNewUser) {
-      this.router.navigate(["/users"]);
-    } else {
-      this.editing.set(false);
-    }
+      if (!this.isNewUser() && currentUser?.id) {
+        this.location.replaceState(`/users/${currentUser.id}`);
+      }
+    });
   }
 
   protected onCancelled(): void {
-    if (this.isNewUser) {
+    if (this.isNewUser()) {
       this.router.navigate(["/users"]);
     } else {
-      this.editing.set(false);
+      this.userStore.stopEditing();
     }
+  }
+
+  protected onDelete(): void {
+    // TODO: implement after API integration
   }
 }

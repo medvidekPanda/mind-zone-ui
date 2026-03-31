@@ -18,7 +18,7 @@
       severity="secondary"
       [text]="true"
     ></a>
-    @if (!isNewSession()) {
+    @if (!isNewSession() && !isEditing()) {
       <button
         type="button"
         pButton
@@ -33,7 +33,7 @@
         pButton
         label="Upravit"
         icon="pi pi-pencil"
-        (click)="sessionStore.startEditing()"
+        (click)="onStartEditing()"
       ></button>
     }
   </div>

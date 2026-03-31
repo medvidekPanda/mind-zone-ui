@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal } from "@angular/core";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
@@ -38,7 +38,6 @@ type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" 
 export class ClientFormComponent {
   private readonly clientStore = inject(ClientStore);
 
-  private readonly saving = signal(false);
   private readonly clientModel = signal<ClientFormModel>({
     firstName: "",
     lastName: "",
@@ -49,32 +48,36 @@ export class ClientFormComponent {
     status: null,
   });
 
-  readonly clientDetail = computed(() => this.clientStore.client());
-  readonly readonly = input<boolean>(false);
-  readonly showActions = input<boolean>(false);
+  private readonly formReadonly = computed(() => !this.isEditing());
 
-  readonly saved = output<void>();
   readonly cancelled = output<void>();
 
-  protected readonly genderOptions = CLIENT_GENDER_OPTIONS;
-  protected readonly statusOptions = CLIENT_STATUS_OPTIONS;
+  constructor() {
+    this.syncFormWithClientDetail();
+  }
+
+  protected readonly clientDetail = computed(() => this.clientStore.client());
 
   protected readonly clientForm = form(this.clientModel, (schemaPath) => {
     required(schemaPath.firstName, { message: "Jméno je povinné" });
     required(schemaPath.lastName, { message: "Příjmení je povinné" });
 
-    readonly(schemaPath.gender, this.readonly);
-    readonly(schemaPath.status, this.readonly);
-    readonly(schemaPath.birthDate, this.readonly);
-    readonly(schemaPath.email, this.readonly);
-    readonly(schemaPath.phone, this.readonly);
-    readonly(schemaPath.firstName, this.readonly);
-    readonly(schemaPath.lastName, this.readonly);
+    readonly(schemaPath.birthDate, this.formReadonly);
+    readonly(schemaPath.email, this.formReadonly);
+    readonly(schemaPath.firstName, this.formReadonly);
+    readonly(schemaPath.gender, this.formReadonly);
+    readonly(schemaPath.lastName, this.formReadonly);
+    readonly(schemaPath.phone, this.formReadonly);
+    readonly(schemaPath.status, this.formReadonly);
   });
 
-  constructor() {
-    this.syncFormWithClientDetail();
-    this.handleSaveResult();
+  protected readonly genderOptions = CLIENT_GENDER_OPTIONS;
+  protected readonly isEditing = computed(() => this.clientStore.isEditing() || !this.clientStore.client()?.id);
+  protected readonly showActions = computed(() => this.isEditing());
+  protected readonly statusOptions = CLIENT_STATUS_OPTIONS;
+
+  protected cancel(): void {
+    this.cancelled.emit();
   }
 
   protected save(): void {
@@ -90,29 +93,12 @@ export class ClientFormComponent {
       status: formValue.status,
     };
 
-    this.saving.set(true);
     const client = this.clientDetail();
     if (client?.id) {
       this.clientStore.updateClient({ id: client.id, payload });
     } else {
       this.clientStore.createClient(payload);
     }
-  }
-
-  protected cancel(): void {
-    this.cancelled.emit();
-  }
-
-  private handleSaveResult(): void {
-    effect(() => {
-      if (!this.saving()) return;
-      if (this.clientStore.isLoading()) return;
-
-      this.saving.set(false);
-      if (!this.clientStore.error()) {
-        this.saved.emit();
-      }
-    });
   }
 
   private syncFormWithClientDetail(): void {

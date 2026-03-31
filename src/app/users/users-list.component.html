@@ -3,21 +3,25 @@
     <h1 class="text-2xl font-bold text-slate-900 m-0">Uživatelé</h1>
     <p class="text-sm text-slate-500 m-0 mt-1">Správa uživatelů a jejich rolí</p>
   </div>
-  <a
-    routerLink="/users/new"
-    pButton
-    label="Nový uživatel"
-    icon="pi pi-plus"
-  ></a>
+  <div class="flex flex-wrap gap-2">
+    <app-list-reload-button (reload)="reloadUsers()" />
+    <a
+      routerLink="/users/new"
+      pButton
+      label="Nový uživatel"
+      icon="pi pi-plus"
+    ></a>
+  </div>
 </div>
 
 <!-- Table card -->
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+<div class="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
   @let _users = users();
 
   <p-table
     #usersTable
     [value]="_users"
+    [loading]="isLoading()"
     [scrollable]="true"
     scrollHeight="flex"
     [globalFilterFields]="['firstName', 'lastName', 'email']"

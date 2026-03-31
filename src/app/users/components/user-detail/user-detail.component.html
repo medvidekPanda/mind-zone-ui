@@ -1,11 +1,25 @@
 @let _user = user();
 
-<p-menu #actionsMenu [model]="actionMenuItems" [popup]="true" appendTo="body" />
+<p-menu
+  #actionsMenu
+  [model]="actionMenuItems"
+  [popup]="true"
+  appendTo="body"
+/>
 
 <app-page-header
-  [title]="isNewUser ? 'Nový uživatel' : editing() ? 'Úprava uživatele' : 'Detail uživatele: ' + _user?.firstName + ' ' + _user?.lastName"
+  [title]="
+    isNewUser()
+      ? 'Nový uživatel'
+      : isEditing()
+        ? 'Úprava uživatele'
+        : 'Detail uživatele: ' + _user?.firstName + ' ' + _user?.lastName
+  "
 >
-  <div actions class="flex gap-2">
+  <div
+    actions
+    class="flex gap-2"
+  >
     <a
       routerLink="/users"
       pButton
@@ -14,7 +28,7 @@
       severity="secondary"
       [text]="true"
     ></a>
-    @if (!editing() && !isNewUser) {
+    @if (!isEditing() && !isNewUser()) {
       <button
         type="button"
         pButton
@@ -23,52 +37,79 @@
         [text]="true"
         (click)="actionsMenu.toggle($event)"
       ></button>
-      <button
-        (click)="startEdit()"
-        type="button"
-        pButton
-        label="Upravit uživatele"
-        icon="pi pi-user-edit"
-      ></button>
     }
   </div>
 </app-page-header>
 
-<div class="overflow-y-auto flex-1 py-6 space-y-6">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-1">
-      <app-user-profile-card [user]="_user" />
-      <app-user-stats class="mt-6" />
-      <div class="mt-6">
-        @if (_user?.id) {
-          <a
-            [routerLink]="['/users', _user!.id, 'clients']"
-            class="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between no-underline text-slate-700 shadow-sm block"
-          >
-            <span class="font-semibold">Klienti uživatele</span>
-            <i class="pi pi-chevron-right text-slate-400"></i>
-          </a>
-        } @else {
-          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between text-slate-400 cursor-not-allowed">
-            <span class="font-semibold">Klienti uživatele</span>
-            <i class="pi pi-chevron-right"></i>
-          </div>
-        }
+<div class="flex-1 relative overflow-y-hidden">
+  @if (isLoading()) {
+    <div class="overflow-y-auto h-full py-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5 space-y-4">
+          <p-skeleton
+            width="4rem"
+            height="4rem"
+            borderRadius="50%"
+          />
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton
+              height="1rem"
+              borderRadius="4px"
+            />
+          }
+        </div>
+        <div class="lg:col-span-2 bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-6 space-y-4">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="flex flex-col gap-2">
+              <p-skeleton
+                width="6rem"
+                height="0.75rem"
+                borderRadius="4px"
+              />
+              <p-skeleton
+                height="2.25rem"
+                borderRadius="8px"
+              />
+            </div>
+          }
+        </div>
       </div>
     </div>
+  } @else {
+    <div class="overflow-y-auto h-full py-6 space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <app-user-profile-card [user]="_user" />
+          <app-user-stats class="mt-6" />
+          <div class="mt-6">
+            @if (_user?.id) {
+              <a
+                [routerLink]="['/users', _user!.id, 'clients']"
+                class="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between no-underline text-slate-700 shadow-sm block"
+              >
+                <span class="font-semibold">Klienti uživatele</span>
+                <i class="pi pi-chevron-right text-slate-400"></i>
+              </a>
+            } @else {
+              <div
+                class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between text-slate-400 cursor-not-allowed"
+              >
+                <span class="font-semibold">Klienti uživatele</span>
+                <i class="pi pi-chevron-right"></i>
+              </div>
+            }
+          </div>
+        </div>
 
-    <div class="lg:col-span-2">
-      <p-card
-        header="Údaje uživatele"
-        class="rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full"
-      >
-        <app-user-form
-          [readonly]="!editing()"
-          [showActions]="editing()"
-          (saved)="onSaved()"
-          (cancelled)="onCancelled()"
-        />
-      </p-card>
+        <div class="lg:col-span-2">
+          <p-card
+            header="Údaje uživatele"
+            class="rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full"
+          >
+            <app-user-form (cancelled)="onCancelled()" />
+          </p-card>
+        </div>
+      </div>
     </div>
-  </div>
+  }
 </div>

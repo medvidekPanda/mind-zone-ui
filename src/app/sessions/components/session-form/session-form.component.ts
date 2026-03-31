@@ -80,12 +80,17 @@ export class SessionFormComponent {
   protected readonly attachments = computed(() => this.sessionDetail()?.attachments ?? []);
   protected readonly attachmentCount = computed(() => this.attachments().length + this.pendingFiles().length);
   protected readonly transcriptAttachment = computed(() =>
-    this.attachments().find((a) => a.processingStatus === "completed" && a.transcript),
+    this.attachments().find((attachment) => attachment.processingStatus === "completed" && attachment.transcript),
   );
+
   protected readonly hasProcessingAttachment = computed(() =>
-    this.attachments().some((a) => a.processingStatus === "queued" || a.processingStatus === "processing"),
+    this.attachments().some(
+      (attachment) => attachment.processingStatus === "queued" || attachment.processingStatus === "processing",
+    ),
   );
+
   protected readonly activeTab = signal("notes");
+
   private readonly sessionModel = signal<SessionFormModel>({
     date: null,
     form: null,

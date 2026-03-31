@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal } from "@angular/core";
 import { FormField, form, readonly, required } from "@angular/forms/signals";
 
 import { ButtonModule } from "primeng/button";
@@ -25,7 +25,7 @@ type UserFormModel = Omit<User, "id" | "createdAt" | "updatedAt" | "role" | "fir
 export class UserFormComponent {
   private readonly userStore = inject(UserStore);
 
-  private readonly saving = signal(false);
+  private readonly formReadonly = computed(() => !this.isEditing());
   private readonly userModel = signal<UserFormModel>({
     firstName: "",
     lastName: "",
@@ -34,41 +34,41 @@ export class UserFormComponent {
     firebaseId: "",
   });
 
-  readonly userDetail = computed(() => this.userStore.user());
-  readonly readonly = input<boolean>(false);
-  readonly showActions = input<boolean>(false);
-
-  readonly saved = output<void>();
   readonly cancelled = output<void>();
 
+  constructor() {
+    this.syncFormWithUserDetail();
+  }
+
+  protected readonly isEditing = computed(() => this.userStore.isEditing() || !this.userStore.user()?.id);
   protected readonly roleOptions: { label: string; value: UserRole }[] = [
     { label: "Uživatel", value: UserRole.USER },
     { label: "Administrátor", value: UserRole.ADMIN },
   ];
-
+  protected readonly showActions = computed(() => this.isEditing());
+  protected readonly userDetail = computed(() => this.userStore.user());
   protected readonly userForm = form(this.userModel, (schemaPath) => {
     required(schemaPath.firstName, { message: "Jméno je povinné" });
     required(schemaPath.lastName, { message: "Příjmení je povinné" });
     required(schemaPath.email, { message: "E-mail je povinný" });
     required(schemaPath.role, { message: "Role je povinná" });
 
-    readonly(schemaPath.role, this.readonly);
-    readonly(schemaPath.firebaseId, this.readonly);
-    readonly(schemaPath.firstName, this.readonly);
-    readonly(schemaPath.lastName, this.readonly);
-    readonly(schemaPath.email, this.readonly);
+    readonly(schemaPath.email, this.formReadonly);
+    readonly(schemaPath.firebaseId, this.formReadonly);
+    readonly(schemaPath.firstName, this.formReadonly);
+    readonly(schemaPath.lastName, this.formReadonly);
+    readonly(schemaPath.role, this.formReadonly);
   });
 
-  constructor() {
-    this.syncFormWithUserDetail();
-    this.handleSaveResult();
+  protected cancel(): void {
+    this.cancelled.emit();
   }
 
   protected save(): void {
-    const f = this.userForm();
-    if (!f.valid()) return;
+    const userForm = this.userForm();
+    if (!userForm.valid()) return;
 
-    const value = f.value() as UserFormModel;
+    const value = userForm.value() as UserFormModel;
     if (value.role === null) return;
 
     const user = this.userDetail();
@@ -76,36 +76,18 @@ export class UserFormComponent {
 
     if (user?.id) {
       const changed = (Object.keys(full) as (keyof UserPayload)[]).reduce(
-        (acc, key) => (full[key] !== user[key] ? { ...acc, [key]: full[key] } : acc),
+        (accumulator, field) => (full[field] !== user[field] ? { ...accumulator, [field]: full[field] } : accumulator),
         {} as Partial<UserPayload>,
       );
 
       if (Object.keys(changed).length > 0) {
-        this.saving.set(true);
         this.userStore.updateUser({ id: user.id, payload: changed });
       } else {
-        this.saved.emit();
+        this.userStore.stopEditing();
       }
     } else {
-      this.saving.set(true);
       this.userStore.createUser(full);
     }
-  }
-
-  protected cancel(): void {
-    this.cancelled.emit();
-  }
-
-  private handleSaveResult(): void {
-    effect(() => {
-      if (!this.saving()) return;
-      if (this.userStore.isLoading()) return;
-
-      this.saving.set(false);
-      if (!this.userStore.error()) {
-        this.saved.emit();
-      }
-    });
   }
 
   private syncFormWithUserDetail(): void {
