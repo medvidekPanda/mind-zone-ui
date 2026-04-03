@@ -17,6 +17,7 @@ type LoginFormModel = {
   selector: "app-login",
   imports: [ButtonModule, InputTextModule, CardModule, FormRoot, FormField],
   templateUrl: "./login.component.html",
+  host: { class: "flex items-center justify-center h-screen" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {

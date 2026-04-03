@@ -1,35 +1,33 @@
-<div class="flex items-center justify-center h-screen">
-  <p-card
-    header="Přihlášení"
-    class="w-full max-w-md"
+<p-card
+  header="Přihlášení"
+  class="w-full max-w-md"
+>
+  <form
+    [formRoot]="loginForm"
+    class="flex flex-col gap-4"
   >
-    <form
-      [formRoot]="loginForm"
-      class="flex flex-col gap-4"
-    >
-      <input
-        pInputText
-        type="email"
-        [formField]="loginForm.email"
-        placeholder="E-mail"
-        class="w-full"
-      />
-      <input
-        pInputText
-        type="password"
-        [formField]="loginForm.password"
-        placeholder="Heslo"
-        class="w-full"
-      />
-      @if (error()) {
-        <p class="text-red-500 text-sm">{{ error() }}</p>
-      }
-      <p-button
-        type="submit"
-        label="Přihlásit se"
-        [loading]="isLoading()"
-        styleClass="w-full"
-      />
-    </form>
-  </p-card>
-</div>
+    <input
+      pInputText
+      type="email"
+      [formField]="loginForm.email"
+      placeholder="E-mail"
+      class="w-full"
+    />
+    <input
+      pInputText
+      type="password"
+      [formField]="loginForm.password"
+      placeholder="Heslo"
+      class="w-full"
+    />
+    @if (error()) {
+      <p class="text-red-500 text-sm">{{ error() }}</p>
+    }
+    <p-button
+      type="submit"
+      label="Přihlásit se"
+      [loading]="isLoading()"
+      styleClass="w-full"
+    />
+  </form>
+</p-card>

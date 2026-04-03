@@ -87,9 +87,9 @@
   } @else {
     <div class="overflow-y-auto h-full py-6 space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1 flex flex-col gap-6">
           <app-client-profile-card [client]="_client" />
-          <app-client-stats class="mt-6" />
+          <app-client-stats />
         </div>
 
         <div class="lg:col-span-2">

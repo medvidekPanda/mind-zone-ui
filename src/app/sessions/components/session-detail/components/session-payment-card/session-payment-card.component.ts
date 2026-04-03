@@ -8,6 +8,9 @@ import { FormCheckboxComponent } from "../../../../../shared/components/form-che
   selector: "app-session-payment-card",
   imports: [FormCheckboxComponent, TagModule],
   templateUrl: "./session-payment-card.component.html",
+  host: {
+    class: "bg-surface-0 rounded-2xl border border-surface-200 shadow-sm overflow-hidden",
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionPaymentCardComponent {

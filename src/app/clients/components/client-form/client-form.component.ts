@@ -32,7 +32,7 @@ type ClientFormModel = Omit<Client, "id" | "createdAt" | "updatedAt" | "gender" 
     SelectModule,
   ],
   templateUrl: "./client-form.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientFormComponent {

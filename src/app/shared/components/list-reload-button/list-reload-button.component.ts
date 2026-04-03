@@ -5,6 +5,7 @@ import { ButtonModule } from "primeng/button";
 @Component({
   selector: "app-list-reload-button",
   imports: [ButtonModule],
+  host: { class: "contents" },
   template: `
     <button
       type="button"

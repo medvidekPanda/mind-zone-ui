@@ -1,0 +1,31 @@
+<div
+  class="absolute left-1 right-1 rounded-lg px-1.5 py-1 bg-teal-600 text-white text-xs shadow-sm z-10 overflow-hidden border border-teal-700 hover:bg-teal-700 flex flex-col min-h-0 cursor-grab active:cursor-grabbing"
+  [style.top.px]="eventTopPx()"
+  [style.height.px]="eventHeightPx()"
+  [class.opacity-70]="isBeingDragged()"
+  [attr.aria-label]="clientLabel() + ', ' + timeRangeLabel()"
+  [pDraggable]="dndScope"
+  [pDroppable]="dndScope"
+  dragEffect="move"
+  (onDrop)="onBlockDrop($event)"
+  (onDragStart)="onDragStart($event)"
+  (onDragEnd)="onDragEnd()"
+>
+  <div class="flex flex-1 min-h-0">
+    <div class="min-w-0 flex-1 flex flex-col min-h-0">
+      <div class="flex items-baseline gap-1.5 min-w-0">
+        <span class="font-semibold leading-tight truncate min-w-0 text-sm">{{ clientLabel() }}</span>
+        <span class="shrink-0 text-[10px] text-teal-100/95 font-medium tabular-nums tracking-tight">{{
+          timeRangeLabel()
+        }}</span>
+      </div>
+      <a
+        class="text-[10px] text-teal-100 underline mt-0.5 inline-block w-fit cursor-pointer"
+        draggable="false"
+        [routerLink]="['/clients', block().clientId]"
+      >
+        Klient
+      </a>
+    </div>
+  </div>
+</div>

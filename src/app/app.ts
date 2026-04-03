@@ -75,7 +75,7 @@ export class App {
       icon: "pi pi-calendar",
       items: [
         { label: "Seznam sezení", icon: "pi pi-list", routerLink: "/sessions" },
-        { label: "Kalendář", icon: "pi pi-calendar-plus", routerLink: "/sessions/calendar" },
+        { label: "Kalendář", icon: "pi pi-calendar-plus", routerLink: "/calendar" },
       ],
     },
   ];

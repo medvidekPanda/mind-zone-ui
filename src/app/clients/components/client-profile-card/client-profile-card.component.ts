@@ -11,6 +11,7 @@ import { AppStore } from "../../../shared/store/app.store";
   selector: "app-client-profile-card",
   imports: [AvatarModule, CardModule, TagModule],
   templateUrl: "./client-profile-card.component.html",
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientProfileCardComponent {

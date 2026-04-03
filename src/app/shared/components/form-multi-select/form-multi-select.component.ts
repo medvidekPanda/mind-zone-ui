@@ -7,6 +7,7 @@ import { MultiSelect } from "primeng/multiselect";
 @Component({
   selector: "app-form-multi-select",
   imports: [FormsModule, MultiSelect],
+  host: { class: "contents" },
   template: `
     <p-multiSelect
       [id]="id()"

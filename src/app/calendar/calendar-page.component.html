@@ -1,0 +1,60 @@
+<app-page-header
+  title="Kalendář"
+  [subtitle]="pageSubtitle()"
+>
+  <div
+    actions
+    class="flex flex-wrap items-center justify-end gap-2 max-sm:w-full"
+  >
+    <button
+      type="button"
+      pButton
+      label="Naplánovat sezení"
+      icon="pi pi-calendar-plus"
+      aria-label="Naplánovat sezení"
+      class="max-sm:[&_.p-button-label]:hidden max-sm:!px-[0.65rem]"
+      (click)="openScheduleFree()"
+    ></button>
+    <a
+      routerLink="/sessions"
+      pButton
+      label="Seznam sezení"
+      icon="pi pi-list"
+      aria-label="Seznam sezení"
+      severity="secondary"
+      outlined
+      class="max-sm:[&_.p-button-label]:hidden max-sm:!px-[0.65rem]"
+    ></a>
+    <button
+      type="button"
+      pButton
+      label="Dnes"
+      icon="pi pi-calendar"
+      aria-label="Dnes"
+      severity="secondary"
+      outlined
+      class="max-sm:[&_.p-button-label]:hidden max-sm:!px-[0.65rem]"
+      (click)="goToday()"
+    ></button>
+    <button
+      type="button"
+      pButton
+      icon="pi pi-chevron-left"
+      severity="secondary"
+      outlined
+      aria-label="Předchozí týden"
+      (click)="navigateWeek(-1)"
+    ></button>
+    <button
+      type="button"
+      pButton
+      icon="pi pi-chevron-right"
+      severity="secondary"
+      outlined
+      aria-label="Další týden"
+      (click)="navigateWeek(1)"
+    ></button>
+  </div>
+</app-page-header>
+
+<app-calendar-week-grid />

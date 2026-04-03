@@ -10,6 +10,7 @@ import { User, UserRole } from "../../../shared/interfaces/user.interface";
   selector: "app-user-profile-card",
   imports: [AvatarModule, CardModule, TagModule],
   templateUrl: "./user-profile-card.component.html",
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserProfileCardComponent {

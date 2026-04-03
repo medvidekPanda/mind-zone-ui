@@ -19,7 +19,7 @@ type UserFormModel = Omit<User, "id" | "createdAt" | "updatedAt" | "role" | "fir
   selector: "app-user-form",
   imports: [ButtonModule, CardModule, FormField, FormSelectComponent, InputTextModule, SelectModule],
   templateUrl: "./user-form.component.html",
-  host: { class: "flex flex-col" },
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserFormComponent {

@@ -7,6 +7,7 @@ import { CardModule } from "primeng/card";
   selector: "app-user-stats",
   imports: [CardModule, ButtonModule],
   templateUrl: "./user-stats.component.html",
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserStatsComponent {}

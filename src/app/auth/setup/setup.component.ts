@@ -19,6 +19,7 @@ type SetupFormModel = {
   selector: "app-setup",
   imports: [ButtonModule, InputTextModule, CardModule, FormRoot, FormField],
   templateUrl: "./setup.component.html",
+  host: { class: "flex items-center justify-center h-screen" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SetupComponent {

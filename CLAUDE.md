@@ -35,6 +35,14 @@ Use the **Angular CLI MCP** (`get_best_practices`, `search_documentation`, `find
 - **Naming:** keep pre-v20 suffixes — `LoginComponent`, `AuthGuard`, `SessionStore` — not the suffix-free style introduced in v20+
 - **Templates:** never call injected services or signal stores directly from the template (e.g. `(click)="myService.doThing()"`, `sessionStore.startEditing()`). Use `protected` component methods, `computed()` values, or readonly field aliases to store signals instead
 
+### Component host vs. template wrapper
+
+Avoid an extra root `div` whose only job is layout or chrome on the component itself:
+
+- **No inner wrapper needed:** put those Tailwind (or other) classes on the component **`host`** via `@Component({ host: { class: '...' } })` and let the template start with the real structure (possibly multiple root nodes). Merge with any existing `host` classes.
+- **Inner wrapper required:** when the template must keep a real box (e.g. `position: relative`, drop targets, scroll container, or a single element that carries structural directives), set the host to **`contents`** using Tailwind (`host: { class: 'contents' }`) so the host does not participate in layout and the wrapper `div` (or other element) holds the styling and behavior.
+- **Prefer `contents` for thin wrappers:** leaf UI controls (`app-form-*` around one PrimeNG widget), single-action components (e.g. reload button), profile cards with one `p-card` root, and forms whose root is already a `<form>` with layout classes — use `host: { class: 'contents' }` (and merge with other host utility classes like `space-y-6` when needed) so the host node stays in the DOM for Angular but is skipped in the **CSS box tree**. Do **not** use `contents` on a host that must itself be the flex/grid container (e.g. page shell headers with `justify-between` on the host).
+
 ## App Areas
 
 Routes (all behind `authGuard` except `login` / `setup`):
@@ -42,29 +50,55 @@ Routes (all behind `authGuard` except `login` / `setup`):
 - `dashboard`
 - `users` / `users/:id` / `users/:id/clients`
 - `clients` / `clients/:id`
-- `sessions` / `sessions/:id` / `sessions/calendar`
+- `sessions` / `sessions/:id` (legacy URL `sessions/calendar` redirects to `calendar`)
+- `calendar`
 
 ## Key Source Paths
 
 ```
 src/app/
   auth/            # Login, setup
+  calendar/        # Weekly calendar: page, components/, service/
   clients/         # Clients list + detail
   dashboard/
-  sessions/        # Sessions list, detail, calendar, form
+  sessions/        # Sessions list, detail, form
   users/           # Users list, detail
   shared/
-    components/    # Shared UI components
-    constants/     # Enum options
-    interfaces/    # Shared TypeScript interfaces
+    components/    # Shared UI components (includes page-header)
+    constants/     # Domain options (session, client, calendar, …)
+    interfaces/    # Shared TypeScript interfaces (incl. calendar.interface)
     service/       # Auth guard, services
-    store/         # Global AppStore (enum options/labels)
-    utils/
+    store/         # AppStore, entity stores, calendar-page store (see Signal Stores)
+    utils/         # Shared helpers (date.utils, calendar.utils, …)
 ```
+
+## Feature folder layout
+
+Keep each **feature area** (`users`, `sessions`, `calendar`, …) consistent:
+
+- **Feature root** (`src/app/<feature>/`): route entry components only (`*-page`, list, detail) where practical — keep the root thin.
+- **Feature-local wiring:** `src/app/<feature>/service/` for injectables scoped to that feature (e.g. `calendar/service/calendar-add-dialog.service.ts` plus small `*.model.ts` next to the service when types exist only for that wiring).
+- **Domain data like `sessions` / `clients`:** put **`shared/constants/<domain>.constants.ts`**, **`shared/interfaces/<domain>.interface.ts`**, and **`shared/utils/<domain>.utils.ts`** (calendar follows this: `calendar.constants`, `calendar.interface`, `calendar.utils`).
+- **Feature subcomponents:** `src/app/<feature>/components/<kebab-name>/` — one folder per component. Avoid many loose `*.component.ts` files directly under `components/`.
+- **Global / cross-feature:** `shared/components/`, `shared/store/` (`AppStore`, `SessionStore`, **`CalendarPageStore`**, …), `shared/service/`, etc. **Lifetime** is separate from folder: use `providedIn: 'root'` only for true app-wide singletons; otherwise list the store in a route/component `providers` array (e.g. `CalendarPageComponent` still provides `CalendarPageStore` even though the file lives in `shared/store/`).
+
+## Page shell
+
+- Use **`PageHeaderComponent`** (`shared/components/page-header`, selector `app-page-header`) for page title and right-side actions. Pass **`title`** (required). Use optional **`subtitle`** for secondary context (e.g. date range under the title), matching the typography of list pages (`text-sm text-slate-500` under the `h1`).
+- Put action buttons in a child element with the **`actions`** attribute; content projects into the header’s action row (same pattern as session detail).
 
 ## Signal Stores
 
-`signalStore` from `@ngrx/signals`. Global `AppStore` (provided in root) holds enum metadata. Feature stores live alongside their feature.
+`signalStore` from `@ngrx/signals`. All store **files** live in `shared/store/` for one place to look. **Root singletons** use `{ providedIn: 'root' }` (e.g. `SessionStore`). **Route-scoped** stores omit root provision and are listed only on the owning component (e.g. `CalendarPageStore`).
+
+### Calendar (`src/app/calendar`)
+
+- **`CalendarPageStore`** (`shared/store/calendar-page.store.ts`) is **provided only on `CalendarPageComponent`** — not a root singleton. Mock blocks/clients, week anchor, and drag payload live here. **`CalendarAddDialogService`** subscribes to the shared **`SessionScheduleDialogComponent`** close result and calls **`addConsultationBlock()`** for mock UI until the API can create empty sessions.
+- **Schedule dialog:** Reuse **`sessions/components/session-schedule-dialog`** via root **`SessionScheduleDialogService`**. Calendar passes **`initialStartMs`** through `openDialog('', startMs)` so date and times are pre-filled from the clicked slot. Client detail still uses `openDialog(clientId)`.
+- **Subcomponents** under `calendar/components/<name>/`: **`inject(CalendarPageStore)`**; no store method calls from templates.
+- **Shared calendar modules:** `shared/constants/calendar.constants.ts`, `shared/interfaces/calendar.interface.ts`, `shared/utils/calendar.utils.ts` (grid + date helpers).
+- Global drag-over styling: `.calendar-day-drop.p-draggable-enter` in `styles.css`.
+- **App shell:** `main` uses `flex flex-col min-h-0` so routed pages (e.g. calendar) can use `flex-1 min-h-0` and fill the viewport height below the menubar.
 
 ### Detail page pattern (sessions is the reference)
 

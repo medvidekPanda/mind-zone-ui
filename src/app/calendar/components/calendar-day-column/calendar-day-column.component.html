@@ -1,0 +1,24 @@
+<div
+  class="calendar-day-drop relative flex w-full min-h-0 flex-1 flex-col border-l border-slate-200 bg-white transition-shadow first:border-l-0"
+  [class.bg-teal-50/60]="day().isToday"
+  [style.min-width.px]="dayColumnMinPx"
+  [pDroppable]="calendarDndScope"
+  dropEffect="move"
+  (onDrop)="onColumnDrop($event)"
+  (pointerdown)="onColumnPointerDown($event)"
+>
+  <div class="absolute inset-0 pointer-events-none">
+    @for (hour of hoursRange; track hour) {
+      <div
+        class="border-t border-slate-100 box-border"
+        [style.height.px]="gridHeightPx / hoursRange.length"
+      ></div>
+    }
+  </div>
+  @for (block of blocksForDay(); track block.id) {
+    <app-calendar-event-block
+      [day]="day()"
+      [block]="block"
+    />
+  }
+</div>

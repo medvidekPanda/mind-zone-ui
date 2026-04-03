@@ -7,6 +7,9 @@ import { DividerModule } from "primeng/divider";
   selector: "app-session-quick-actions",
   imports: [ButtonModule, DividerModule],
   templateUrl: "./session-quick-actions.component.html",
+  host: {
+    class: "bg-surface-0 rounded-2xl border border-surface-200 shadow-sm p-5",
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionQuickActionsComponent {

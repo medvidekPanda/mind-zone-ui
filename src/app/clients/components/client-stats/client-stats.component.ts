@@ -7,6 +7,7 @@ import { CardModule } from "primeng/card";
   selector: "app-client-stats",
   imports: [CardModule, ButtonModule],
   templateUrl: "./client-stats.component.html",
+  host: { class: "flex flex-col gap-6" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientStatsComponent {}

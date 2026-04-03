@@ -1,36 +1,37 @@
-<div class="flex items-center justify-center h-screen">
-  <p-card class="w-full max-w-md">
-    <ng-template #header>
-      <div class="px-6 pt-6">
-        <h2 class="text-xl font-semibold text-slate-900 m-0">Dokončení profilu</h2>
-        <p class="text-sm text-slate-500 mt-1 mb-0">Vyplňte své jméno pro dokončení registrace</p>
-      </div>
-    </ng-template>
+<p-card class="w-full max-w-md">
+  <ng-template #header>
+    <div class="px-6 pt-6">
+      <h2 class="text-xl font-semibold text-slate-900 m-0">Dokončení profilu</h2>
+      <p class="text-sm text-slate-500 mt-1 mb-0">Vyplňte své jméno pro dokončení registrace</p>
+    </div>
+  </ng-template>
 
-    <form [formRoot]="setupForm" class="flex flex-col gap-4">
-      <input
-        pInputText
-        type="text"
-        [formField]="setupForm.firstName"
-        placeholder="Jméno"
-        class="w-full"
-      />
-      <input
-        pInputText
-        type="text"
-        [formField]="setupForm.lastName"
-        placeholder="Příjmení"
-        class="w-full"
-      />
-      @if (error()) {
-        <p class="text-red-500 text-sm">{{ error() }}</p>
-      }
-      <p-button
-        type="submit"
-        label="Dokončit registraci"
-        [loading]="isLoading()"
-        styleClass="w-full"
-      />
-    </form>
-  </p-card>
-</div>
+  <form
+    [formRoot]="setupForm"
+    class="flex flex-col gap-4"
+  >
+    <input
+      pInputText
+      type="text"
+      [formField]="setupForm.firstName"
+      placeholder="Jméno"
+      class="w-full"
+    />
+    <input
+      pInputText
+      type="text"
+      [formField]="setupForm.lastName"
+      placeholder="Příjmení"
+      class="w-full"
+    />
+    @if (error()) {
+      <p class="text-red-500 text-sm">{{ error() }}</p>
+    }
+    <p-button
+      type="submit"
+      label="Dokončit registraci"
+      [loading]="isLoading()"
+      styleClass="w-full"
+    />
+  </form>
+</p-card>

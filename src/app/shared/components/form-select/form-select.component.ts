@@ -8,6 +8,7 @@ import { Select } from "primeng/select";
   selector: "app-form-select",
   imports: [FormsModule, Select],
   templateUrl: "./form-select.component.html",
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormSelectComponent<T = unknown> implements FormValueControl<T | null> {

@@ -7,6 +7,7 @@ import { InputNumber } from "primeng/inputnumber";
 @Component({
   selector: "app-form-input-number",
   imports: [FormsModule, InputNumber],
+  host: { class: "contents" },
   template: `
     <p-inputNumber
       [id]="id()"

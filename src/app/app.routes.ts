@@ -63,11 +63,13 @@ export const routes: Routes = [
           import("./sessions/components/session-detail/session-detail.component").then((m) => m.SessionDetailComponent),
       },
       {
+        path: "calendar",
+        loadComponent: () => import("./calendar/calendar-page.component").then((m) => m.CalendarPageComponent),
+      },
+      {
         path: "sessions/calendar",
-        loadComponent: () =>
-          import("./sessions/components/sessions-calendar/sessions-calendar.component").then(
-            (m) => m.SessionsCalendarComponent,
-          ),
+        redirectTo: "calendar",
+        pathMatch: "full",
       },
       {
         path: "sessions/:id",

@@ -7,6 +7,7 @@ import { DatePicker } from "primeng/datepicker";
 @Component({
   selector: "app-form-timepicker",
   imports: [FormsModule, DatePicker],
+  host: { class: "contents" },
   template: `
     <p-datepicker
       [id]="id()"

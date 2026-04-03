@@ -4,10 +4,13 @@ import { FormValueControl } from "@angular/forms/signals";
 
 import { DatePicker } from "primeng/datepicker";
 
+import { toDateKey } from "../../utils/calendar.utils";
+
 @Component({
   selector: "app-form-datepicker",
   imports: [FormsModule, DatePicker],
   templateUrl: "./form-datepicker.component.html",
+  host: { class: "contents" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormDatepickerComponent implements FormValueControl<string | null> {
@@ -29,13 +32,6 @@ export class FormDatepickerComponent implements FormValueControl<string | null> 
   });
 
   protected setDate(selectedDate: Date | null): void {
-    this.value.set(selectedDate ? this.formatIso(selectedDate) : null);
-  }
-
-  private formatIso(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    this.value.set(selectedDate ? toDateKey(selectedDate) : null);
   }
 }

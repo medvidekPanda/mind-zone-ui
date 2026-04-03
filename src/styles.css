@@ -1,4 +1,8 @@
 /* Global styles – Tailwind, PrimeUI plugin, PrimeIcons, base */
-@import 'tailwindcss';
-@import 'tailwindcss-primeui';
-@import 'primeicons/primeicons.css';
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+@import "primeicons/primeicons.css";
+
+.calendar-day-drop.p-draggable-enter {
+  box-shadow: inset 0 0 0 2px #0d9488;
+}

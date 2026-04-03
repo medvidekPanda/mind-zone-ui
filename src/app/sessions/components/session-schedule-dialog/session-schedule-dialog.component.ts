@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from "@angular/core";
 import { FormField, FormRoot, form, required } from "@angular/forms/signals";
 
 import { Button } from "primeng/button";
@@ -10,11 +10,13 @@ import { FormTimepickerComponent } from "../../../shared/components/form-timepic
 import { SESSION_FORM_OPTIONS, SESSION_TYPE_OPTIONS } from "../../../shared/constants/session.constants";
 import { SessionForm, SessionType } from "../../../shared/interfaces/session.interface";
 import { ClientStore } from "../../../shared/store/client.store";
+import { toDateKey } from "../../../shared/utils/calendar.utils";
 import { roundToNext5Min } from "../../../shared/utils/date.utils";
 
 export interface SchedulePayload {
   clientId: string | null;
-  date: Date | null;
+  /** Local calendar day from the form (`YYYY-MM-DD`); avoids UTC parsing bugs from `new Date("YYYY-MM-DD")`. */
+  dateKey: string | null;
   startTime: Date | null;
   endTime: Date | null;
   form: SessionForm | null;
@@ -34,6 +36,7 @@ type ScheduleFormModel = {
   selector: "app-session-schedule-dialog",
   imports: [Button, FormRoot, FormField, FormDatepickerComponent, FormSelectComponent, FormTimepickerComponent],
   templateUrl: "./session-schedule-dialog.component.html",
+  host: { class: "flex flex-col gap-4 pt-1" },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionScheduleDialogComponent {
@@ -41,6 +44,12 @@ export class SessionScheduleDialogComponent {
   private readonly dynamicDialogRef = inject(DynamicDialogRef);
 
   readonly clientId = input<string>("");
+
+  /** When set (e.g. from calendar slot), pre-fills date and start/end time. */
+  readonly initialStartMs = input<number | undefined>(undefined);
+
+  private readonly preselectedClientId = computed(() => this.clientId().trim());
+  private readonly fromCalendarSlot = computed(() => this.initialStartMs() != null);
 
   private readonly scheduleModel = signal<ScheduleFormModel>({
     clientId: null,
@@ -57,14 +66,17 @@ export class SessionScheduleDialogComponent {
   });
 
   protected readonly clientOptions = computed(() => {
-    const preselectedId = this.clientId();
+    const preselectedId = this.preselectedClientId();
     const current = this.clientStore.client();
 
-    if (preselectedId && current?.id === preselectedId) {
+    if (!this.fromCalendarSlot() && preselectedId && current?.id === preselectedId) {
       return [{ label: `${current.firstName} ${current.lastName}`, value: current.id }];
     }
 
-    return this.clientStore.clients().map((c) => ({ label: `${c.firstName} ${c.lastName}`, value: c.id }));
+    return this.clientStore.clients().map((client) => ({
+      label: `${client.firstName} ${client.lastName}`,
+      value: client.id,
+    }));
   });
 
   protected readonly formOptions = SESSION_FORM_OPTIONS;
@@ -79,14 +91,15 @@ export class SessionScheduleDialogComponent {
   });
 
   constructor() {
-    this.syncClientId();
+    this.ensureFullClientListWhenPickAny();
+    this.syncScheduleDialogInputs();
   }
 
   protected onSave(): void {
     const value = this.scheduleForm().value() as ScheduleFormModel;
     const payload: SchedulePayload = {
       clientId: value.clientId,
-      date: value.date ? new Date(value.date) : null,
+      dateKey: value.date,
       startTime: value.startTime,
       endTime: value.endTime,
       form: value.form,
@@ -100,12 +113,38 @@ export class SessionScheduleDialogComponent {
     this.dynamicDialogRef.close();
   }
 
-  private syncClientId(): void {
+  /** Load all clients when the dialog is not scoped to one pre-selected client (calendar, header, empty id). */
+  private ensureFullClientListWhenPickAny(): void {
     effect(() => {
-      const clientId = this.clientId();
+      const pickAnyClient = this.preselectedClientId().length === 0 || this.fromCalendarSlot();
+      if (!pickAnyClient) return;
+      untracked(() => {
+        this.clientStore.loadAll();
+      });
+    });
+  }
 
-      if (clientId) {
-        this.scheduleModel.update((model) => ({ ...model, clientId }));
+  private syncScheduleDialogInputs(): void {
+    effect(() => {
+      const fromCalendarSlotMs = this.initialStartMs();
+      const preselectedClientId = this.preselectedClientId();
+
+      if (fromCalendarSlotMs != null) {
+        const start = new Date(fromCalendarSlotMs);
+        const end = new Date(start.getTime() + 60 * 60_000);
+        this.scheduleModel.set({
+          clientId: null,
+          date: toDateKey(start),
+          startTime: new Date(start),
+          endTime: end,
+          form: null,
+          type: null,
+        });
+        return;
+      }
+
+      if (preselectedClientId.length > 0) {
+        this.scheduleModel.update((model) => ({ ...model, clientId: preselectedClientId }));
       }
     });
   }
